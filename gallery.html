@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery | Anniyappa Publications</title>
+  <meta name="description" content="Explore photos from Anniyappa Publications, featuring summer internships, LaTeX typesetting workshops, academic board meets, and student project showcases.">
+  <meta name="keywords" content="Anniyappa Publications, photo gallery, academic events, LaTeX workshops, student internship gallery">
+  
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Anniyappa <span>Publications</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="bookshelf.html">Bookshelf</a></li>
+          <li class="nav-item"><a class="nav-link" href="upcoming.html">Upcoming Books</a></li>
+          <li class="nav-item"><a class="nav-link" href="internship.html">Internship & Training</a></li>
+          <li class="nav-item"><a class="nav-link" href="gallery.html">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="hero-section text-center d-flex align-items-center" style="padding: 180px 0 80px;">
+    <div class="container hero-content animate-up">
+      <span class="badge bg-light text-primary mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 0.8rem;">
+        <i class="bi bi-images me-1"></i>Activity Log
+      </span>
+      <h1 class="hero-title mb-3 fs-2">Our Photo Gallery</h1>
+      <p class="hero-subtitle mx-auto mb-0" style="max-width: 650px;">A visual record of our academic programs, technical seminars, student batch training workshops, and book launch events.</p>
+    </div>
+  </section>
+
+  <!-- Gallery Content -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      
+      <!-- Gallery Filters -->
+      <div class="row mb-4 justify-content-center animate-up">
+        <div class="col-12">
+          <div class="gallery-filter-group">
+            <button class="category-btn active" data-gallery-filter="all">All Photos</button>
+            <button class="category-btn" data-gallery-filter="internship">Student Internships</button>
+            <button class="category-btn" data-gallery-filter="workshop">Workshops & Seminars</button>
+            <button class="category-btn" data-gallery-filter="event">Academic Events</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid animate-up mt-2" style="animation-delay: 0.1s;">
+
+        <!-- Card 1: Internship -->
+        <div class="gallery-item-col" data-gallery-cat="internship">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230f4c81'/><stop offset='100%' stop-color='%232563eb'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-20,-10 L20,-10 L20,20 L-20,20 Z' fill='%23fff'/><path d='M-10,-10 L-10,-20 L10,-20 L10,-10' stroke='%23fff' stroke-width='4' fill='none'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Summer Internship Batch 2025</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Active manuscript reviewing brainstorming sessions</text></svg>" data-title="Summer Internship Batch 2025" data-desc="Active brainstorming session on metadata indexing.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #0f4c81 0%, #2563eb 100%); color: #fff;">
+              <i class="bi bi-people-fill text-warning"></i>
+              <span class="fw-bold mt-2">Summer Batch 2025</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Summer Internship Batch 2025</h5>
+              <p>Active manuscript reviewing brainstorming sessions</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Workshop -->
+        <div class="gallery-item-col" data-gallery-cat="workshop">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%231e3a8a'/><stop offset='100%' stop-color='%230d9488'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-25,15 L25,15 L0,-25 Z' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>LaTeX Typesetting Workshop</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Scholars compile their first scientific article structures</text></svg>" data-title="LaTeX Typesetting Workshop" data-desc="Scholars compile their first research article structures.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%); color: #fff;">
+              <i class="bi bi-file-earmark-code text-warning"></i>
+              <span class="fw-bold mt-2">LaTeX Typesetting Lab</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>LaTeX Typesetting Workshop</h5>
+              <p>Scholars compile their first scientific article structures</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Event -->
+        <div class="gallery-item-col" data-gallery-cat="event">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%234338ca'/><stop offset='100%' stop-color='%237c3aed'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-15,-15 L15,-15 L15,15 L-15,15 Z' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Annual Academic Board Meet</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Editorial members discuss journal indexing expansion</text></svg>" data-title="Annual Academic Board Meet" data-desc="Editorial members discuss indexing scopes.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%); color: #fff;">
+              <i class="bi bi-award text-warning"></i>
+              <span class="fw-bold mt-2">Board Summit</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Annual Academic Board Meet</h5>
+              <p>Editorial members discuss journal indexing expansion</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Event -->
+        <div class="gallery-item-col" data-gallery-cat="event">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23b91c1c'/><stop offset='100%' stop-color='%23ea580c'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-10,-20 L20,0 L-10,20 Z' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>AI Book Series Launch</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Unveiling of the Generative AI handbook series</text></svg>" data-title="AI Book Series Launch" data-desc="Unveiling of the Generative AI handbook series.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #b91c1c 0%, #ea580c 100%); color: #fff;">
+              <i class="bi bi-journal-check text-warning"></i>
+              <span class="fw-bold mt-2">AI Book Release</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>AI Book Series Launch</h5>
+              <p>Unveiling of the Generative AI handbook series</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Internship -->
+        <div class="gallery-item-col" data-gallery-cat="internship">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%2315803d'/><stop offset='100%' stop-color='%23166534'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><rect x='-20' y='-20' width='40' height='40' rx='5' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Editorial Coding Lab</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Interns compiling XML tools for digital bookshelf modules</text></svg>" data-title="Editorial Coding Lab" data-desc="Interns compiling XML tools for digital bookshelf modules.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #fff;">
+              <i class="bi bi-code-slash text-warning"></i>
+              <span class="fw-bold mt-2">Editorial Coding Lab</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Editorial Coding Lab</h5>
+              <p>Interns compiling XML tools for digital bookshelf modules</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6: Workshop -->
+        <div class="gallery-item-col" data-gallery-cat="workshop">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230f766e'/><stop offset='100%' stop-color='%23111827'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-20,0 L20,0 M0,-20 L0,20' stroke='%23fff' stroke-width='6'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Peer Review Training</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Peer reviewers reviewing plagiarism report parameters</text></svg>" data-title="Peer Review Training" data-desc="Peer reviewers reviewing plagiarism report parameters.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #0f766e 0%, #111827 100%); color: #fff;">
+              <i class="bi bi-shield-check text-warning"></i>
+              <span class="fw-bold mt-2">Peer Review Meet</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Peer Review Training</h5>
+              <p>Peer reviewers reviewing plagiarism report parameters</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 7: Workshop -->
+        <div class="gallery-item-col" data-gallery-cat="workshop">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23db2777'/><stop offset='100%' stop-color='%237c3aed'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><circle cx='0' cy='0' r='15' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Research Methodology Seminar</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Scholars discussing hypotheses formulation and SPSS tools</text></svg>" data-title="Research Methodology Seminar" data-desc="Scholars discussing hypotheses formulation and SPSS tools.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #db2777 0%, #7c3aed 100%); color: #fff;">
+              <i class="bi bi-graph-up-arrow text-warning"></i>
+              <span class="fw-bold mt-2">Methodology Class</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Research Methodology Seminar</h5>
+              <p>Scholars discussing hypotheses formulation and SPSS tools</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 8: Internship -->
+        <div class="gallery-item-col" data-gallery-cat="internship">
+          <div class="gallery-card" data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='800' height='600' fill='url(%23g)'/><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230ea5e9'/><stop offset='100%' stop-color='%232563eb'/></linearGradient></defs><g transform='translate(400,220)'><circle r='50' fill='rgba(255,255,255,0.1)'/><path d='M-20,10 L0,-20 L20,10 Z' fill='%23fff'/></g><text x='400' y='360' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='%23fff' text-anchor='middle'>Student Project Showcase</text><text x='400' y='410' font-family='sans-serif' font-size='18' fill='%23eff6ff' text-anchor='middle'>Interns presenting their final typesetting and layout scripts</text></svg>" data-title="Student Project Showcase" data-desc="Interns presenting their final typesetting and layout scripts.">
+            <div class="gallery-placeholder" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); color: #fff;">
+              <i class="bi bi-mortarboard-fill text-warning"></i>
+              <span class="fw-bold mt-2">Project Showcase</span>
+            </div>
+            <div class="gallery-overlay">
+              <div class="zoom-icon"><i class="bi bi-zoom-in"></i></div>
+              <h5>Student Project Showcase</h5>
+              <p>Interns presenting their final typesetting and layout scripts</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox Overlay -->
+  <div class="lightbox-overlay" id="galleryLightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close lightbox">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous image">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <div class="lightbox-content animate-scale">
+      <img src="" alt="" id="lightboxImg">
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next image">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="footer-brand"><i class="bi bi-journal-bookmark-fill me-2"></i>Anniyappa <span>Publications</span></div>
+          <p class="text-white-50 mb-4">A leading academic publishing house and professional educational service provider. Dedicated to building scientific progress and teaching critical industrial competencies.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4">
+          <h5 class="footer-heading">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="bookshelf.html">Bookshelf</a></li>
+            <li><a href="upcoming.html">Upcoming Books</a></li>
+            <li><a href="internship.html">Internship & Training</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Our Services</h5>
+          <ul class="footer-links">
+            <li><a href="bookshelf.html">Journal Publishing</a></li>
+            <li><a href="bookshelf.html">Scholarly Books</a></li>
+            <li><a href="internship.html">Domain Internships</a></li>
+            <li><a href="internship.html#trainingSection">Technical Workshops</a></li>
+            <li><a href="upcoming.html">Upcoming Releases</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Contact Details</h5>
+          <ul class="list-unstyled text-white-50">
+            <li class="footer-contact-item">
+              <i class="bi bi-geo-alt-fill footer-contact-icon"></i>
+              <span>No. 45, Second Floor, Academic Avenue, Knowledge Park, Bangalore - 560001, India</span>
+            </li>
+            <li class="footer-contact-item">
+              <i class="bi bi-telephone-fill footer-contact-icon"></i>
+              <span>+91 80 4912 3456</span>
+            </li>
+            <li class="footer-contact-item">
+              <i class="bi bi-envelope-fill footer-contact-icon"></i>
+              <span>contact@anniyappapublications.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom text-center">
+        <p class="mb-0 text-white-50">&copy; 2026 Anniyappa Publications. All Rights Reserved. | SB Institute Academic Initiative</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/918049123456" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+  </a>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top">
+    <i class="bi bi-chevron-up"></i>
+  </button>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script src="js/main.js"></script>
+</body>
+</html>

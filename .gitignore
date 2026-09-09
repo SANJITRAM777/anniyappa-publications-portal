@@ -1,0 +1,17 @@
+# Environment/config
+.env
+includes/db.php
+
+# Uploaded/private files
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Bookshelf | Anniyappa Publications</title>
+  <meta name="description" content="Browse the Anniyappa Publications bookshelf. Academic textbooks and reference books in Computer Science, AI, Web Technology, Data Science, Blockchain, IoT, Cloud Computing, and Internship Materials.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Anniyappa <span>Publications</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="bookshelf.html">Bookshelf</a></li>
+          <li class="nav-item"><a class="nav-link" href="upcoming.html">Upcoming Books</a></li>
+          <li class="nav-item"><a class="nav-link" href="internship.html">Internship & Training</a></li>
+          <li class="nav-item"><a class="nav-link" href="gallery.html">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="hero-section text-center d-flex align-items-center" style="padding: 180px 0 80px;">
+    <div class="container hero-content animate-up">
+      <span class="badge bg-light text-primary mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 0.8rem;">
+        <i class="bi bi-bookshelf me-1"></i>Our Library
+      </span>
+      <h1 class="hero-title mb-3 fs-2">Digital Bookshelf</h1>
+      <p class="hero-subtitle mx-auto mb-0" style="max-width: 650px;">Explore our curated collection of academic textbooks, research references, and learning materials across cutting-edge technology domains.</p>
+    </div>
+  </section>
+
+  <!-- Bookshelf Content -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      <!-- Search Bar -->
+      <div class="row justify-content-center mb-5 animate-up">
+        <div class="col-lg-6">
+          <div class="input-group shadow-sm" style="border-radius: 30px; overflow: hidden; border: 1px solid rgba(15, 76, 129, 0.12);">
+            <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="pubSearch" class="form-control border-0 py-3 ps-2" placeholder="Search by title, author, or keyword..." aria-label="Search Books">
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="row animate-up" style="animation-delay: 0.1s;">
+        <div class="col-12">
+          <div class="category-btn-group">
+            <button class="category-btn active" data-filter="all">All Books</button>
+            <button class="category-btn" data-filter="cs">Computer Science</button>
+            <button class="category-btn" data-filter="ai">Artificial Intelligence</button>
+            <button class="category-btn" data-filter="web">Web Technology</button>
+            <button class="category-btn" data-filter="ds">Data Science</button>
+            <button class="category-btn" data-filter="blockchain">Blockchain</button>
+            <button class="category-btn" data-filter="iot">IoT</button>
+            <button class="category-btn" data-filter="cloud">Cloud Computing</button>
+            <button class="category-btn" data-filter="internship">Internship Materials</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Books Grid -->
+      <div class="row g-4 mt-2" id="publicationsGrid">
+
+        <!-- Book 1: Computer Science -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up">
+          <div class="publication-card" data-category="cs">
+            <div class="book-cover book-cs">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Reference Manual</span>
+                <h3 class="book-cover-title">Data Structures & Algorithms</h3>
+                <span class="book-cover-author">Dr. R. Anniyappa</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Computer Science</span>
+              <h4 class="pub-title">Advanced Data Structures & Algorithm Design</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Dr. R. Anniyappa</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2025</span>
+              </div>
+              <p class="pub-desc">A comprehensive reference covering sorting, searching, graph algorithms, dynamic programming, and complexity analysis with real-world implementation examples.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-3-16-148410-0</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 2: Artificial Intelligence -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.1s;">
+          <div class="publication-card" data-category="ai">
+            <div class="book-cover book-ai">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Academic Textbook</span>
+                <h3 class="book-cover-title">AI in Education</h3>
+                <span class="book-cover-author">Dr. R. Anniyappa</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Artificial Intelligence</span>
+              <h4 class="pub-title">Handbook of Artificial Intelligence in Education</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Dr. R. Anniyappa</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2025</span>
+              </div>
+              <p class="pub-desc">An extensive academic handbook detailing generative AI modeling, adaptive tutoring systems, ethical criteria, and pedagogical outcomes across universities.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-3-16-148411-7</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 3: Web Technology -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.2s;">
+          <div class="publication-card" data-category="web">
+            <div class="book-cover book-web">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Professional Guide</span>
+                <h3 class="book-cover-title">Modern Web Technologies</h3>
+                <span class="book-cover-author">Prof. S. Kumar</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Web Technology</span>
+              <h4 class="pub-title">Full-Stack Web Development with Modern Frameworks</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Prof. S. Kumar</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2024</span>
+              </div>
+              <p class="pub-desc">Covers HTML5, CSS3, JavaScript ES6+, React, Node.js, REST APIs, and deployment pipelines for building production-grade web applications.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-0-12-345678-9</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 4: Data Science -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up">
+          <div class="publication-card" data-category="ds">
+            <div class="book-cover book-ds">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Textbook</span>
+                <h3 class="book-cover-title">Data Science Essentials</h3>
+                <span class="book-cover-author">Dr. V. Prasad</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Data Science</span>
+              <h4 class="pub-title">Foundations of Data Science & Statistical Learning</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Dr. V. Prasad</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2024</span>
+              </div>
+              <p class="pub-desc">Covers data wrangling, exploratory analysis, regression models, classification, clustering, and visualization using Python and R with real datasets.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-81-702-094-1</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 5: Blockchain -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.1s;">
+          <div class="publication-card" data-category="blockchain">
+            <div class="book-cover book-bc">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Research Reference</span>
+                <h3 class="book-cover-title">Blockchain Systems</h3>
+                <span class="book-cover-author">Prof. S. Mukerjee</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Blockchain</span>
+              <h4 class="pub-title">Blockchain Protocols & Decentralized Applications</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Prof. S. Mukerjee</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2025</span>
+              </div>
+              <p class="pub-desc">An empirical guide outlining privacy-preserving decentralized ledger implementation, smart contracts, consensus mechanisms, and enterprise blockchain solutions.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-1-40-289462-3</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 6: IoT -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.2s;">
+          <div class="publication-card" data-category="iot">
+            <div class="book-cover book-iot">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Academic Guide</span>
+                <h3 class="book-cover-title">IoT & Smart Systems</h3>
+                <span class="book-cover-author">Prof. A. K. Sen</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">IoT</span>
+              <h4 class="pub-title">Internet of Things: Architecture & Applications</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Prof. A. K. Sen</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2024</span>
+              </div>
+              <p class="pub-desc">Covers sensor networks, edge computing, MQTT protocols, smart home architectures, industrial IoT, and security considerations for connected devices.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-0-99-876543-2</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 7: Cloud Computing -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up">
+          <div class="publication-card" data-category="cloud">
+            <div class="book-cover book-cloud">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Professional Reference</span>
+                <h3 class="book-cover-title">Cloud Architecture</h3>
+                <span class="book-cover-author">Dr. M. Reddy</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Cloud Computing</span>
+              <h4 class="pub-title">Cloud Architecture Patterns & DevOps Practices</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Dr. M. Reddy</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2025</span>
+              </div>
+              <p class="pub-desc">Covers AWS, Azure, GCP services, microservices architecture, containerization with Docker/Kubernetes, serverless computing, and CI/CD pipeline design.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-3-54-712890-5</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 8: Internship Materials -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.1s;">
+          <div class="publication-card" data-category="internship">
+            <div class="book-cover book-intern">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Learning Module</span>
+                <h3 class="book-cover-title">Internship Handbook</h3>
+                <span class="book-cover-author">Anniyappa Editorial</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Internship Materials</span>
+              <h4 class="pub-title">Publishing Internship: Complete Learning Guide</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Editorial Team</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2026</span>
+              </div>
+              <p class="pub-desc">Comprehensive module covering manuscript preparation, metadata indexing, digital typesetting, LaTeX basics, and editorial workflow management for interns.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-81-951-234-0</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book 9: AI (Machine Learning) -->
+        <div class="col-lg-4 col-md-6 publication-col animate-up" style="animation-delay: 0.2s;">
+          <div class="publication-card" data-category="ai">
+            <div class="book-cover" style="background: linear-gradient(135deg, #6d28d9, #a855f7);">
+              <div class="book-cover-content">
+                <span class="book-cover-label">Scholarly Guide</span>
+                <h3 class="book-cover-title">Machine Learning</h3>
+                <span class="book-cover-author">Dr. P. Nair</span>
+              </div>
+              <div class="book-cover-decor"></div>
+            </div>
+            <div class="publication-info">
+              <span class="publication-badge">Artificial Intelligence</span>
+              <h4 class="pub-title">Machine Learning: Theory to Production</h4>
+              <div class="pub-meta">
+                <span><i class="bi bi-person me-1"></i>Dr. P. Nair</span>
+                <span><i class="bi bi-calendar3 me-1"></i>2025</span>
+              </div>
+              <p class="pub-desc">From supervised and unsupervised learning to neural networks, deep learning frameworks, model deployment with MLOps, and ethical AI considerations.</p>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted fw-bold">ISBN: 978-0-13-468599-1</span>
+                <div class="d-flex gap-2">
+                  <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-file-earmark-text me-1"></i>Sample</a>
+                  <a href="contact.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Inquire</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="footer-brand"><i class="bi bi-journal-bookmark-fill me-2"></i>Anniyappa <span>Publications</span></div>
+          <p class="text-white-50 mb-4">A leading academic publishing house and professional educational service provider.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4">
+          <h5 class="footer-heading">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="bookshelf.html">Bookshelf</a></li>
+            <li><a href="upcoming.html">Upcoming Books</a></li>
+            <li><a href="internship.html">Internship & Training</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Book Categories</h5>
+          <ul class="footer-links">
+            <li><a href="bookshelf.html">Computer Science</a></li>
+            <li><a href="bookshelf.html">Artificial Intelligence</a></li>
+            <li><a href="bookshelf.html">Web Technology</a></li>
+            <li><a href="bookshelf.html">Data Science</a></li>
+            <li><a href="bookshelf.html">Blockchain & IoT</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Contact Details</h5>
+          <ul class="list-unstyled text-white-50">
+            <li class="footer-contact-item"><i class="bi bi-geo-alt-fill footer-contact-icon"></i><span>Knowledge Park, Bangalore - 560001</span></li>
+            <li class="footer-contact-item"><i class="bi bi-telephone-fill footer-contact-icon"></i><span>+91 80 4912 3456</span></li>
+            <li class="footer-contact-item"><i class="bi bi-envelope-fill footer-contact-icon"></i><span>contact@anniyappapublications.com</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom text-center">
+        <p class="mb-0 text-white-50">&copy; 2026 Anniyappa Publications. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/918049123456" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><i class="bi bi-whatsapp"></i></a>
+  <button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top"><i class="bi bi-chevron-up"></i></button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

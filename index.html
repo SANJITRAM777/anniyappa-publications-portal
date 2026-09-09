@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anniyappa Publications | Academic Publishing & Educational Services</title>
+  <meta name="description" content="Anniyappa Publications – a premier academic publishing house offering research journals, scholarly textbooks, internship programs, and professional training in Computer Science, AI, Data Science, and more.">
+  <meta name="keywords" content="Anniyappa Publications, academic publishing, research journals, textbooks, internships, training, AI, Data Science, Computer Science">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Anniyappa <span>Publications</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="bookshelf.html">Bookshelf</a></li>
+          <li class="nav-item"><a class="nav-link" href="upcoming.html">Upcoming Books</a></li>
+          <li class="nav-item"><a class="nav-link" href="internship.html">Internship & Training</a></li>
+          <li class="nav-item"><a class="nav-link" href="gallery.html">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section d-flex align-items-center" id="heroSection">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 hero-content animate-up">
+          <span class="badge bg-light text-primary mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 0.8rem;">
+            <i class="bi bi-stars me-1"></i>Empowering Education & Research
+          </span>
+          <h1 class="hero-title">Shaping the Future of <span class="gradient-text" style="-webkit-text-fill-color: #fbbf24;">Knowledge</span></h1>
+          <p class="hero-subtitle">
+            Anniyappa Publications is a leading academic publishing house dedicated to producing quality research articles, scientific books, and curriculum materials — while cultivating future talent through internships and technical training.
+          </p>
+          <div class="hero-btn-group">
+            <a href="bookshelf.html" class="btn btn-primary-custom rounded-pill">
+              <i class="bi bi-book me-2"></i>Explore Bookshelf
+            </a>
+            <a href="contact.html" class="btn btn-outline-custom rounded-pill">
+              <i class="bi bi-envelope me-2"></i>Contact Us
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-6 hero-image-container d-none d-lg-flex animate-up" style="animation-delay: 0.2s;">
+          <svg viewBox="0 0 500 450" width="100%" height="auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#0f4c81" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="100%" stop-color="#0f4c81"/>
+              </linearGradient>
+            </defs>
+            <circle cx="250" cy="225" r="180" fill="url(#circleGrad)" />
+            <path d="M120 320 L280 250 L380 290 L220 360 Z" fill="#1e293b" />
+            <path d="M220 360 L380 290 L380 310 L220 380 Z" fill="#0f172a" />
+            <path d="M120 320 L220 360 L220 380 L120 340 Z" fill="#3b82f6" />
+            <path d="M140 280 L300 210 L400 250 L240 320 Z" fill="url(#bookGrad)" />
+            <path d="M240 320 L400 250 L400 270 L240 340 Z" fill="#0a3459" />
+            <path d="M140 280 L240 320 L240 340 L140 300 Z" fill="#60a5fa" />
+            <path d="M160 240 L320 170 L420 210 L260 280 Z" fill="#f8fafc" />
+            <path d="M260 280 L420 210 L420 225 L260 295 Z" fill="#cbd5e1" />
+            <path d="M160 240 L260 280 L260 295 L160 255 Z" fill="#0284c7" />
+            <rect x="250" y="80" width="100" height="130" rx="8" fill="#ffffff" filter="drop-shadow(0px 8px 16px rgba(0,0,0,0.1))" transform="rotate(-15 300 145)"/>
+            <line x1="270" y1="120" x2="330" y2="105" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" transform="rotate(-15 300 145)"/>
+            <line x1="270" y1="140" x2="320" y2="128" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" transform="rotate(-15 300 145)"/>
+            <line x1="270" y1="160" x2="340" y2="142" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" transform="rotate(-15 300 145)"/>
+            <line x1="270" y1="180" x2="310" y2="170" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" transform="rotate(-15 300 145)"/>
+            <path d="M150 120 L200 95 L250 120 L200 145 Z" fill="#0f172a" />
+            <rect x="185" y="130" width="30" height="15" fill="#0f172a" rx="2" />
+            <path d="M170 125 L170 160 L165 160" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+            <circle cx="165" cy="160" r="3" fill="#fbbf24" />
+            <path d="M80 250 C 120 180, 220 150, 300 100" stroke="#fbbf24" stroke-width="4" stroke-dasharray="8 6" stroke-linecap="round" />
+            <path d="M300 100 L285 98 M300 100 L298 115" stroke="#fbbf24" stroke-width="4" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Metrics -->
+  <section class="py-4 bg-white border-bottom" style="box-shadow: 0 4px 30px rgba(0,0,0,0.04);">
+    <div class="container">
+      <div class="row text-center gy-4">
+        <div class="col-md-3 col-6">
+          <div class="p-2">
+            <h4 class="fw-bold text-primary mb-0 font-title" id="counter-books">150+</h4>
+            <small class="text-muted">Books Published</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="p-2">
+            <h4 class="fw-bold text-primary mb-0 font-title">10+</h4>
+            <small class="text-muted">Peer Journals</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="p-2">
+            <h4 class="fw-bold text-primary mb-0 font-title">1200+</h4>
+            <small class="text-muted">Trained Interns</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="p-2">
+            <h4 class="fw-bold text-primary mb-0 font-title">50+</h4>
+            <small class="text-muted">Academic Courses</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Overview Section -->
+  <section class="section-padding bg-light">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+          <div class="about-image-wrapper pe-lg-4">
+            <div class="card border-0 overflow-hidden shadow-lg" style="border-radius: 20px;">
+              <div class="card-body p-0 d-flex align-items-center justify-content-center text-white text-center" style="height: 400px; background: linear-gradient(135deg, #0f4c81 0%, #2563eb 50%, #0ea5e9 100%);">
+                <div class="p-4">
+                  <i class="bi bi-award fs-1 d-block mb-3 text-warning"></i>
+                  <h3 class="font-title mb-2">Established Excellence</h3>
+                  <p class="text-white-50 px-md-4 mb-3">Disseminating state-of-the-art research papers, reference books, and journals to advance scientific thinking worldwide.</p>
+                  <a href="about.html" class="btn btn-light btn-sm rounded-pill px-4 text-primary fw-semibold">Learn More</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="section-title">
+            <span class="text-primary fw-semibold text-uppercase tracking-wider" style="font-size: 0.85rem; letter-spacing: 2px;">About Our Organization</span>
+            <h2 class="mt-2">Promoting Knowledge & Learning Globally</h2>
+          </div>
+          <p class="lead text-dark">Anniyappa Publications is a trusted publishing house for research journals, textbooks, and professional development training modules.</p>
+          <p class="mb-4">We act as a catalyst for scholarly progress. By coordinating peer-reviewed scientific journals and offering customized educational courses, we help authors publish high-quality studies and students acquire crucial industry competencies.</p>
+          <div class="row gy-3 mb-4">
+            <div class="col-sm-6 d-flex align-items-center">
+              <i class="bi bi-check-circle-fill text-primary me-3"></i>
+              <span class="fw-medium text-dark">Refereed Research Journals</span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center">
+              <i class="bi bi-check-circle-fill text-primary me-3"></i>
+              <span class="fw-medium text-dark">Direct Skill-based Training</span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center">
+              <i class="bi bi-check-circle-fill text-primary me-3"></i>
+              <span class="fw-medium text-dark">Hands-on Internship Exposure</span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center">
+              <i class="bi bi-check-circle-fill text-primary me-3"></i>
+              <span class="fw-medium text-dark">Global Indexing Support</span>
+            </div>
+          </div>
+          <a href="about.html" class="btn btn-primary-custom rounded-pill px-4 py-2">Learn More About Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission & Vision -->
+  <section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-6 animate-up">
+          <div class="mission-vision-box h-100">
+            <div class="d-flex align-items-center mb-3">
+              <div class="card-icon-wrapper me-3 mb-0" style="width: 50px; height: 50px; font-size: 1.3rem;">
+                <i class="bi bi-eye"></i>
+              </div>
+              <h3 class="font-title mb-0 h4">Our Vision</h3>
+            </div>
+            <p class="text-dark mb-0">To establish a premium, globally integrated academic publishing platform that elevates knowledge distribution, creates ethical scientific literature, and prepares young scholars to confidently face industry challenges.</p>
+          </div>
+        </div>
+        <div class="col-md-6 animate-up" style="animation-delay: 0.15s;">
+          <div class="mission-vision-box h-100" style="border-left-color: var(--accent-color);">
+            <div class="d-flex align-items-center mb-3">
+              <div class="card-icon-wrapper me-3 mb-0" style="width: 50px; height: 50px; font-size: 1.3rem; color: var(--accent-color); background: rgba(14, 165, 233, 0.1);">
+                <i class="bi bi-bullseye"></i>
+              </div>
+              <h3 class="font-title mb-0 h4">Our Mission</h3>
+            </div>
+            <p class="text-dark mb-0">To support researchers with rigorous peer-review and indexing standards, offer students industry-aligned hands-on internship programs, and supply accessible educational materials that promote scientific awareness across all fields.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Books Slider -->
+  <section class="section-padding bg-light">
+    <div class="container">
+      <div class="section-title text-center">
+        <span class="text-primary fw-semibold text-uppercase" style="letter-spacing: 2px; font-size: 0.85rem;">Our Collection</span>
+        <h2>Featured Books</h2>
+      </div>
+      <div class="book-slider-wrapper" id="bookSlider">
+        <button class="slider-btn slider-prev" id="sliderPrev" aria-label="Previous">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="book-slider-track" id="sliderTrack">
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #1e3a8a, #0d9488);">AI in Education</div>
+              <div class="book-mini-info">
+                <h6>Handbook of AI in Education</h6>
+                <small>Dr. R. Anniyappa</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #7c3aed, #db2777);">Web Technologies</div>
+              <div class="book-mini-info">
+                <h6>Advanced Web Technologies</h6>
+                <small>Prof. S. Kumar</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #ea580c, #b45309);">Blockchain</div>
+              <div class="book-mini-info">
+                <h6>Blockchain in Healthcare</h6>
+                <small>Prof. S. Mukerjee</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #0f766e, #111827);">Data Science</div>
+              <div class="book-mini-info">
+                <h6>Data Science Fundamentals</h6>
+                <small>Dr. V. Prasad</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #4338ca, #1e40af);">Cloud Computing</div>
+              <div class="book-mini-info">
+                <h6>Cloud Architecture Patterns</h6>
+                <small>Dr. M. Reddy</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #15803d, #166534);">IoT Systems</div>
+              <div class="book-mini-info">
+                <h6>IoT & Smart Systems</h6>
+                <small>Prof. A. K. Sen</small>
+              </div>
+            </div>
+          </div>
+          <div class="book-slide">
+            <div class="book-mini-card">
+              <div class="book-mini-cover" style="background: linear-gradient(135deg, #b91c1c, #7f1d1d);">Academic Writing</div>
+              <div class="book-mini-info">
+                <h6>Principles of Academic Writing</h6>
+                <small>Prof. A. K. Sen</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="slider-btn slider-next" id="sliderNext" aria-label="Next">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+      <div class="text-center mt-4">
+        <a href="bookshelf.html" class="btn btn-primary-custom rounded-pill px-4">
+          View Full Bookshelf <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Services Section -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      <div class="section-title text-center">
+        <span class="text-primary fw-semibold text-uppercase" style="letter-spacing: 2px; font-size: 0.85rem;">What We Offer</span>
+        <h2>Core Services & Programs</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="custom-card">
+            <div class="card-icon-wrapper"><i class="bi bi-book"></i></div>
+            <h3>Publications</h3>
+            <p>Peer-reviewed scientific journals, textbooks, conference proceedings, and open access journals with full DOIs.</p>
+            <a href="bookshelf.html" class="card-link text-primary">Browse Catalog <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="custom-card">
+            <div class="card-icon-wrapper"><i class="bi bi-laptop"></i></div>
+            <h3>Internships</h3>
+            <p>Practical online and physical training internships for college students in content curation, editing, and operations.</p>
+            <a href="internship.html" class="card-link text-primary">Apply Now <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="custom-card">
+            <div class="card-icon-wrapper"><i class="bi bi-journal-check"></i></div>
+            <h3>Training</h3>
+            <p>Tailored professional development courses in academic writing, LaTeX, typesetting, research methodology, and tools.</p>
+            <a href="internship.html#trainingSection" class="card-link text-primary">Register Today <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="custom-card">
+            <div class="card-icon-wrapper"><i class="bi bi-gear-wide-connected"></i></div>
+            <h3>Research Support</h3>
+            <p>Providing editing, formatting, and indexing assistance to scholars, research teams, and doctoral candidates.</p>
+            <a href="contact.html" class="card-link text-primary">Get Support <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Internship Highlights -->
+  <section class="section-padding bg-light border-top">
+    <div class="container">
+      <div class="section-title text-center">
+        <span class="text-primary fw-semibold text-uppercase" style="letter-spacing: 2px; font-size: 0.85rem;">Build Your Career</span>
+        <h2>Internship Highlights</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="custom-card text-center">
+            <div class="card-icon-wrapper mx-auto"><i class="bi bi-calendar-check"></i></div>
+            <h4 class="fw-bold h5">Flexible Duration</h4>
+            <p class="small">4 to 12 week programs with online, offline, and hybrid options available year-round.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="custom-card text-center">
+            <div class="card-icon-wrapper mx-auto"><i class="bi bi-patch-check-fill"></i></div>
+            <h4 class="fw-bold h5">Certified Program</h4>
+            <p class="small">Receive an authorized internship certificate and letter of recommendation upon completion.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="custom-card text-center">
+            <div class="card-icon-wrapper mx-auto"><i class="bi bi-people"></i></div>
+            <h4 class="fw-bold h5">Expert Mentorship</h4>
+            <p class="small">Work directly under experienced editors and industry professionals throughout your program.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="custom-card text-center">
+            <div class="card-icon-wrapper mx-auto"><i class="bi bi-code-slash"></i></div>
+            <h4 class="fw-bold h5">Multiple Domains</h4>
+            <p class="small">Choose from Content Editing, Research Writing, Web Development, and Editorial Design.</p>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-5">
+        <a href="internship.html" class="btn btn-primary-custom rounded-pill px-5 py-3">
+          <i class="bi bi-rocket-takeoff me-2"></i>Explore Internship Programs
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="py-5 text-white" style="background: linear-gradient(135deg, #0f4c81 0%, #1d4ed8 50%, #0ea5e9 100%);">
+    <div class="container text-center py-4">
+      <h2 class="text-white font-title mb-3 fs-1">Looking to Publish Your Research?</h2>
+      <p class="text-white-50 mx-auto mb-4 fs-5" style="max-width: 600px;">Get indexed in leading global scholarly databases. Our academic editorial team supports you from submission to publication.</p>
+      <a href="contact.html" class="btn btn-light rounded-pill px-5 py-3 fw-semibold text-primary shadow">
+        <i class="bi bi-send me-2"></i>Submit Your Manuscript Now
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="footer-brand"><i class="bi bi-journal-bookmark-fill me-2"></i>Anniyappa <span>Publications</span></div>
+          <p class="text-white-50 mb-4">A leading academic publishing house and professional educational service provider. Dedicated to building scientific progress and teaching critical industrial competencies.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4">
+          <h5 class="footer-heading">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="bookshelf.html">Bookshelf</a></li>
+            <li><a href="upcoming.html">Upcoming Books</a></li>
+            <li><a href="internship.html">Internship & Training</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Our Services</h5>
+          <ul class="footer-links">
+            <li><a href="bookshelf.html">Journal Publishing</a></li>
+            <li><a href="bookshelf.html">Scholarly Books</a></li>
+            <li><a href="internship.html">Domain Internships</a></li>
+            <li><a href="internship.html#trainingSection">Technical Workshops</a></li>
+            <li><a href="upcoming.html">Upcoming Releases</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-4">
+          <h5 class="footer-heading">Contact Details</h5>
+          <ul class="list-unstyled text-white-50">
+            <li class="footer-contact-item">
+              <i class="bi bi-geo-alt-fill footer-contact-icon"></i>
+              <span>No. 45, Second Floor, Academic Avenue, Knowledge Park, Bangalore - 560001, India</span>
+            </li>
+            <li class="footer-contact-item">
+              <i class="bi bi-telephone-fill footer-contact-icon"></i>
+              <span>+91 80 4912 3456</span>
+            </li>
+            <li class="footer-contact-item">
+              <i class="bi bi-envelope-fill footer-contact-icon"></i>
+              <span>contact@anniyappapublications.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom text-center">
+        <p class="mb-0 text-white-50">&copy; 2026 Anniyappa Publications. All Rights Reserved. | SB Institute Academic Initiative</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/918049123456" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+  </a>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top">
+    <i class="bi bi-chevron-up"></i>
+  </button>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script src="js/main.js"></script>
+</body>
+</html>
