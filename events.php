@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_event'])) {
     if ($event_id > 0) {
         try {
             // Check if already registered
-            $check = $pdo->prepare("SELECT id FROM registrations WHERE event_id = ? AND user_id = ?");
+            $check = $pdo->prepare("SELECT id FROM event_registrations WHERE event_id = ? AND user_id = ?");
             $check->execute([$event_id, $user_id]);
             
             if ($check->fetch()) {
@@ -29,14 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_event'])) {
             } else {
                 $pdo->beginTransaction();
                 
+                // Fetch user name for registration record
+                $profStmt = $pdo->prepare("SELECT full_name, phone FROM user_profiles WHERE user_id = ?");
+                $profStmt->execute([$user_id]);
+                $userProf = $profStmt->fetch();
+                $attendee_name = $userProf['full_name'] ?? $_SESSION['user_name'] ?? 'Attendee';
+                $phone = $userProf['phone'] ?? NULL;
+
                 // Insert registration
-                $insReg = $pdo->prepare("INSERT INTO registrations (event_id, user_id) VALUES (?, ?)");
-                $insReg->execute([$event_id, $user_id]);
-                $reg_id = $pdo->lastInsertId();
-                
-                // Add to participants
-                $insPart = $pdo->prepare("INSERT INTO participants (registration_id, attendance_status) VALUES (?, 'Absent')");
-                $insPart->execute([$reg_id]);
+                $insReg = $pdo->prepare("INSERT INTO event_registrations (event_id, user_id, attendee_name, phone) VALUES (?, ?, ?, ?)");
+                $insReg->execute([$event_id, $user_id, $attendee_name, $phone]);
                 
                 $pdo->commit();
                 $success = "Registration successful! You have secured your slot. The meeting URL is now active.";
@@ -57,7 +59,7 @@ $events = $eventsStmt->fetchAll();
 // Get registered event IDs for current user to display links
 $my_registrations = [];
 if (is_logged_in()) {
-    $myRegsStmt = $pdo->prepare("SELECT event_id FROM registrations WHERE user_id = ?");
+    $myRegsStmt = $pdo->prepare("SELECT event_id FROM event_registrations WHERE user_id = ?");
     $myRegsStmt->execute([get_logged_in_user_id()]);
     $my_registrations = $myRegsStmt->fetchAll(PDO::FETCH_COLUMN);
 }
@@ -122,7 +124,7 @@ if (is_logged_in()) {
                   <?php if ($is_registered): ?>
                     <div class="d-flex align-items-center gap-2">
                       <span class="badge bg-success py-2 px-3 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Registered</span>
-                      <a href="<?php echo sanitize($event['meeting_link'] ?: '#'); ?>" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                      <a href="<?php echo sanitize($event['meet_link'] ?: '#'); ?>" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                         <i class="bi bi-play-circle-fill me-1"></i>Join Google Meet
                       </a>
                     </div>

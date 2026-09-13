@@ -49,16 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quiz'])) {
         $insResult->execute([$quiz_id, $student_id, $score, $max_score]);
         $results_recorded = true;
         
-        // Update enrollment progress
-        $upProg = $pdo->prepare("UPDATE course_enrollments SET progress_percent = 100, completed_at = CURRENT_TIMESTAMP WHERE course_id = ? AND student_id = ?");
-        $upProg->execute([$quiz['course_id'], $student_id]);
-        
-        // Issue Certificate if score >= 70%
+        // Calculate passing threshold (70%)
         $passing_score = ceil($max_score * 0.7);
+
         if ($score >= $passing_score) {
+            // Update enrollment progress to 100% only if passed
+            $upProg = $pdo->prepare("UPDATE course_enrollments SET progress_percent = 100, completed_at = CURRENT_TIMESTAMP WHERE course_id = ? AND student_id = ?");
+            $upProg->execute([$quiz['course_id'], $student_id]);
+            
             $cert_code = 'CERT-LMS-' . $quiz_id . '-' . strtoupper(dechex(time())) . rand(10, 99);
             
-            // Check if already issued
+            // Check if certificate already issued
             $chkCert = $pdo->prepare("SELECT id FROM certificates WHERE user_id = ? AND type = 'Course' AND reference_id = ?");
             $chkCert->execute([$student_id, $quiz['course_id']]);
             
@@ -67,6 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quiz'])) {
                 $insCert->execute([$student_id, $quiz['course_id'], $cert_code]);
                 $certificate_issued = true;
             }
+        } else {
+            // Update partial progress without setting completed_at
+            $calcProgress = min(90, max(50, round(($score / ($max_score ?: 1)) * 100)));
+            $upProg = $pdo->prepare("UPDATE course_enrollments SET progress_percent = GREATEST(progress_percent, ?) WHERE course_id = ? AND student_id = ?");
+            $upProg->execute([$calcProgress, $quiz['course_id'], $student_id]);
         }
     } catch (PDOException $e) {
         $error = "Failed to record results: " . $e->getMessage();

@@ -28,10 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book'])) {
             ");
             $stmt->execute([$title, $category_id, $price, $stock, $description, $is_featured]);
             
-            // Map to default author for simplicity (Dr. R. Anniyappa - ID=1)
-            $book_id = $pdo->lastInsertId();
-            $mapStmt = $pdo->prepare("INSERT INTO book_authors (book_id, author_id) VALUES (?, 1)");
-            $mapStmt->execute([$book_id]);
+            // Map to existing author or default author
+            $authorCheck = $pdo->query("SELECT id FROM authors ORDER BY id ASC LIMIT 1")->fetchColumn();
+            $author_id = $authorCheck ?: 1;
+            if (!$authorCheck) {
+                $pdo->exec("INSERT IGNORE INTO authors (id, name, bio) VALUES (1, 'Dr. R. Anniyappa', 'Chief Editor')");
+            }
+            $mapStmt = $pdo->prepare("INSERT IGNORE INTO book_authors (book_id, author_id) VALUES (?, ?)");
+            $mapStmt->execute([$book_id, $author_id]);
             
             $success = "Book added to digital catalog successfully!";
         } catch (PDOException $e) {

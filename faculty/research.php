@@ -176,7 +176,7 @@ $scholar_proposals = $proposalsStmt->fetchAll();
                   <p class="text-muted mt-2 small" style="font-size:0.75rem;"><?php echo sanitize($prop['abstract']); ?></p>
                   
                   <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                    <a href="/book_details.php?download=1" class="btn btn-outline-secondary btn-sm px-2.5 rounded-pill font-monospace" style="font-size: 0.7rem;" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                    <a href="/download.php?type=proposal&id=<?php echo $prop['id']; ?>" class="btn btn-outline-secondary btn-sm px-2.5 rounded-pill font-monospace" style="font-size: 0.7rem;" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
                     
                     <form action="/faculty/research.php" method="POST" class="d-flex align-items-center gap-1">
                       <input type="hidden" name="proposal_id" value="<?php echo $prop['id']; ?>">

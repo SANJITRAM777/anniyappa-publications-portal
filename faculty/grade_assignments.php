@@ -135,7 +135,7 @@ $submissions = $submissionsStmt->fetchAll();
                     </td>
                     <td class="text-muted"><?php echo date('M d, Y', strtotime($sub['submitted_at'])); ?></td>
                     <td>
-                      <a href="/book_details.php?download=1" class="btn btn-outline-secondary btn-sm p-1.5 border-0 rounded-circle" title="Download Document" target="_blank">
+                      <a href="/download.php?type=assignment&id=<?php echo $sub['id']; ?>" class="btn btn-outline-secondary btn-sm p-1.5 border-0 rounded-circle" title="Download Document" target="_blank">
                         <i class="bi bi-file-earmark-arrow-down fs-5"></i>
                       </a>
                     </td>

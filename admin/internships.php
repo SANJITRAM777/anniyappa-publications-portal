@@ -113,7 +113,7 @@ $applications = $appsStmt->fetchAll();
                     </td>
                     <td class="text-muted"><?php echo date('M d, Y', strtotime($app['applied_at'])); ?></td>
                     <td>
-                      <a href="/book_details.php?download=1" class="btn btn-outline-secondary btn-sm p-1.5 border-0 rounded-circle" title="View CV File" target="_blank">
+                      <a href="/download.php?type=resume&id=<?php echo $app['id']; ?>" class="btn btn-outline-secondary btn-sm p-1.5 border-0 rounded-circle" title="View CV File" target="_blank">
                         <i class="bi bi-file-earmark-pdf fs-5"></i>
                       </a>
                     </td>

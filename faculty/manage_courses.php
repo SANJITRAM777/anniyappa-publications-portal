@@ -27,8 +27,8 @@ if ($course_id > 0) {
     $active_course = $cStmt->fetch();
     
     if ($active_course) {
-        // Fetch lessons
-        $lesStmt = $pdo->prepare("SELECT * FROM lessons WHERE course_id = ? ORDER BY order_no ASC");
+        // Fetch lessons from course_lessons
+        $lesStmt = $pdo->prepare("SELECT * FROM course_lessons WHERE course_id = ? ORDER BY sort_order ASC");
         $lesStmt->execute([$course_id]);
         $lessons = $lesStmt->fetchAll();
         
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_lesson'])) {
     } else {
         try {
             $insLes = $pdo->prepare("
-                INSERT INTO lessons (course_id, title, video_url, content_text, order_no) 
+                INSERT INTO course_lessons (course_id, title, video_url, content, sort_order) 
                 VALUES (?, ?, ?, ?, ?)
             ");
             $insLes->execute([$course_id, $title, $video_url, $content_text, $order_no]);
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_lesson'])) {
                 }
                 
                 if (move_uploaded_file($file['tmp_name'], $dest)) {
-                    $insMat = $pdo->prepare("INSERT INTO materials (lesson_id, title, file_path, type) VALUES (?, ?, ?, ?)");
+                    $insMat = $pdo->prepare("INSERT INTO course_materials (lesson_id, title, file_path, type) VALUES (?, ?, ?, ?)");
                     $insMat->execute([$lesson_id, $title . " Reading PDF", 'uploads/books/' . $filename, strtoupper($ext)]);
                 }
             }
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
                   <?php foreach ($lessons as $les): ?>
                     <div class="list-group-item px-0 bg-transparent py-2.5 d-flex justify-content-between align-items-center">
                       <div>
-                        <strong class="text-dark d-block">Chapter <?php echo $les['order_no']; ?>: <?php echo sanitize($les['title']); ?></strong>
+                        <strong class="text-dark d-block">Chapter <?php echo $les['sort_order']; ?>: <?php echo sanitize($les['title']); ?></strong>
                         <span class="text-muted" style="font-size:0.75rem;">Video: <?php echo $les['video_url'] ? 'Yes' : 'No'; ?></span>
                       </div>
                     </div>

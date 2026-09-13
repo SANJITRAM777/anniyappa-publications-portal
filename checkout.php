@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             // Insert Order directly with billing, shipping, discount and payment details
             $insOrder = $pdo->prepare("
                 INSERT INTO orders (user_id, invoice_number, total_amount, discount_amount, coupon_code, payment_method, transaction_id, status, shipping_address) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'Completed', ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'Processing', ?)
             ");
             $insOrder->execute([$user_id, $invoice_no, $total_amount, $discount_amount, $coupon_code_val, $payment_method, $transaction_id, $address]);
             $order_id = $pdo->lastInsertId();

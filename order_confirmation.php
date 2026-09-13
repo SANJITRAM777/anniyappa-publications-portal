@@ -10,21 +10,39 @@ if (!is_logged_in()) {
 }
 
 $order_id = (int)($_GET['order_id'] ?? 0);
+$invoice_param = trim($_GET['invoice'] ?? $_GET['invoice_number'] ?? '');
 $user_id = get_logged_in_user_id();
+$is_admin = has_role('Admin');
 
-// Fetch order details directly from orders table (unified schema)
-$orderStmt = $pdo->prepare("
-    SELECT *
-    FROM orders
-    WHERE id = ? AND user_id = ?
-");
-$orderStmt->execute([$order_id, $user_id]);
-$order = $orderStmt->fetch();
+// Fetch order details by ID or Invoice Number
+if ($order_id > 0) {
+    if ($is_admin) {
+        $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
+        $orderStmt->execute([$order_id]);
+    } else {
+        $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE id = ? AND user_id = ?");
+        $orderStmt->execute([$order_id, $user_id]);
+    }
+} elseif (!empty($invoice_param)) {
+    if ($is_admin) {
+        $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE invoice_number = ?");
+        $orderStmt->execute([$invoice_param]);
+    } else {
+        $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE invoice_number = ? AND user_id = ?");
+        $orderStmt->execute([$invoice_param, $user_id]);
+    }
+} else {
+    $orderStmt = null;
+}
+
+$order = $orderStmt ? $orderStmt->fetch() : null;
 
 if (!$order) {
-    echo "Order not found or access denied.";
+    echo "<!DOCTYPE html><html><head><title>Access Denied</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'></head><body class='bg-light d-flex align-items-center justify-content-center vh-100'><div class='card text-center p-5 shadow' style='max-width: 500px; border-radius: 15px;'><h1 class='h4 text-danger mb-3'>Order Not Found or Access Denied</h1><p class='text-muted'>Unable to retrieve order details for the specified invoice parameter.</p><a href='/bookshelf.php' class='btn btn-primary rounded-pill mt-2'>Return to Bookshelf</a></div></body></html>";
     exit;
 }
+
+$order_id = (int)$order['id'];
 
 // Fetch order items
 $itemsStmt = $pdo->prepare("
@@ -36,9 +54,9 @@ $itemsStmt = $pdo->prepare("
 $itemsStmt->execute([$order_id]);
 $items = $itemsStmt->fetchAll();
 
-// Fetch user profile
+// Fetch user profile of the order recipient
 $profStmt = $pdo->prepare("SELECT full_name, phone FROM user_profiles WHERE user_id = ?");
-$profStmt->execute([$user_id]);
+$profStmt->execute([$order['user_id']]);
 $profile = $profStmt->fetch();
 ?>
 
@@ -102,7 +120,8 @@ $profile = $profStmt->fetch();
             <?php 
             $subtotal = 0;
             foreach ($items as $item): 
-              $item_total = $item['price'] * $item['quantity'];
+              $unit_price = $item['unit_price'];
+              $item_total = $unit_price * $item['quantity'];
               $subtotal += $item_total;
             ?>
               <tr>
@@ -110,7 +129,7 @@ $profile = $profStmt->fetch();
                   <h6 class="fw-bold text-dark mb-0 small"><?php echo sanitize($item['title']); ?></h6>
                 </td>
                 <td class="text-center text-dark small"><?php echo $item['quantity']; ?></td>
-                <td class="text-end text-dark small">&#8377;<?php echo number_format($item['price'], 2); ?></td>
+                <td class="text-end text-dark small">&#8377;<?php echo number_format($unit_price, 2); ?></td>
                 <td class="text-end text-dark fw-bold">&#8377;<?php echo number_format($item_total, 2); ?></td>
               </tr>
             <?php endforeach; ?>

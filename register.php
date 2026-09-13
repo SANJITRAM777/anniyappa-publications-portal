@@ -47,6 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Start transaction
             $pdo->beginTransaction();
             try {
+                // Ensure default roles exist in database
+                $roleCheck = $pdo->prepare("SELECT id FROM roles WHERE id = ?");
+                $roleCheck->execute([$role_id]);
+                if (!$roleCheck->fetch()) {
+                    $pdo->exec("INSERT IGNORE INTO roles (id, name) VALUES (1, 'Admin'), (2, 'Faculty'), (3, 'Student'), (4, 'Author')");
+                }
+
                 // Insert User
                 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
                 $insertUser = $pdo->prepare("INSERT INTO users (email, password, role_id) VALUES (?, ?, ?)");

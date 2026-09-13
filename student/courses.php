@@ -12,7 +12,7 @@ $lesson_id = (int)($_GET['lesson_id'] ?? 0);
 
 // Fetch enrolled courses
 $enrollStmt = $pdo->prepare("
-    SELECT ce.*, c.title, c.description, c.cover_image 
+    SELECT ce.*, c.title, c.description, c.thumbnail 
     FROM course_enrollments ce
     JOIN courses c ON ce.course_id = c.id
     WHERE ce.student_id = ?
@@ -38,8 +38,8 @@ if ($course_id > 0) {
         $cStmt->execute([$course_id]);
         $active_course = $cStmt->fetch();
         
-        // Fetch lessons
-        $lesStmt = $pdo->prepare("SELECT * FROM lessons WHERE course_id = ? ORDER BY order_no ASC");
+        // Fetch lessons from course_lessons
+        $lesStmt = $pdo->prepare("SELECT * FROM course_lessons WHERE course_id = ? ORDER BY sort_order ASC");
         $lesStmt->execute([$course_id]);
         $lessons = $lesStmt->fetchAll();
         
@@ -50,13 +50,13 @@ if ($course_id > 0) {
         
         // If lesson selected, fetch lesson details & materials
         if ($lesson_id > 0) {
-            $lesDetStmt = $pdo->prepare("SELECT * FROM lessons WHERE id = ? AND course_id = ?");
+            $lesDetStmt = $pdo->prepare("SELECT * FROM course_lessons WHERE id = ? AND course_id = ?");
             $lesDetStmt->execute([$lesson_id, $course_id]);
             $active_lesson = $lesDetStmt->fetch();
             
             if ($active_lesson) {
-                // Fetch materials
-                $matStmt = $pdo->prepare("SELECT * FROM materials WHERE lesson_id = ?");
+                // Fetch materials from course_materials
+                $matStmt = $pdo->prepare("SELECT * FROM course_materials WHERE lesson_id = ?");
                 $matStmt->execute([$lesson_id]);
                 $materials = $matStmt->fetchAll();
             }
@@ -187,7 +187,7 @@ if ($course_id > 0) {
                 <?php endif; ?>
                 
                 <h4 class="fw-bold h6 text-dark border-bottom pb-2 mb-3">Lecture Transcript / Content</h4>
-                <p class="text-dark small" style="line-height: 1.6;"><?php echo nl2br(sanitize($active_lesson['content_text'])); ?></p>
+                <p class="text-dark small" style="line-height: 1.6;"><?php echo nl2br(sanitize($active_lesson['content'])); ?></p>
                 
                 <!-- Notes / PDF materials -->
                 <h4 class="fw-bold h6 text-dark border-bottom pb-2 mt-4 mb-3">Study Notes & Materials</h4>
@@ -204,7 +204,7 @@ if ($course_id > 0) {
                             <small class="text-muted" style="font-size:0.75rem;">Format: <?php echo sanitize($mat['type']); ?></small>
                           </div>
                         </div>
-                        <a href="/book_details.php?download=1" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 font-monospace" style="font-size:0.75rem;">Download</a>
+                        <a href="/download.php?type=material&id=<?php echo $mat['id']; ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 font-monospace" style="font-size:0.75rem;">Download</a>
                       </div>
                     <?php endforeach; ?>
                   </div>
