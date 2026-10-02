@@ -44,88 +44,93 @@ if (isset($_SESSION['coupon_id'])) {
     $coupon_code = $_SESSION['coupon_code'];
 }
 
-// Handle coupon submission
-if (isset($_POST['apply_coupon'])) {
-    if (!empty($coupon_code)) {
-        $cpStmt = $pdo->prepare("SELECT * FROM coupons WHERE code = ? AND active = TRUE AND expiry_date >= CURDATE()");
-        $cpStmt->execute([$coupon_code]);
-        $coupon = $cpStmt->fetch();
-        
-        if ($coupon) {
-            $coupon_id = $coupon['id'];
-            $discount_percent = $coupon['discount_percent'];
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
+    
+    // Handle coupon submission
+    if (isset($_POST['apply_coupon'])) {
+        if (!empty($coupon_code)) {
+            $cpStmt = $pdo->prepare("SELECT * FROM coupons WHERE code = ? AND active = TRUE AND expiry_date >= CURDATE()");
+            $cpStmt->execute([$coupon_code]);
+            $coupon = $cpStmt->fetch();
             
-            $_SESSION['coupon_id'] = $coupon_id;
-            $_SESSION['coupon_discount'] = $discount_percent;
-            $_SESSION['coupon_code'] = $coupon_code;
-            
-            $coupon_msg = "Coupon code '{$coupon_code}' applied successfully! ({$discount_percent}% off)";
-            $coupon_msg_type = 'success';
-        } else {
-            unset($_SESSION['coupon_id']);
-            unset($_SESSION['coupon_discount']);
-            unset($_SESSION['coupon_code']);
-            $coupon_id = null;
-            $discount_percent = 0;
-            $coupon_msg = "Invalid or expired coupon code.";
+            if ($coupon) {
+                $coupon_id = $coupon['id'];
+                $discount_percent = $coupon['discount_percent'];
+                
+                $_SESSION['coupon_id'] = $coupon_id;
+                $_SESSION['coupon_discount'] = $discount_percent;
+                $_SESSION['coupon_code'] = $coupon_code;
+                
+                $coupon_msg = "Coupon code '{$coupon_code}' applied successfully! ({$discount_percent}% off)";
+                $coupon_msg_type = 'success';
+            } else {
+                unset($_SESSION['coupon_id']);
+                unset($_SESSION['coupon_discount']);
+                unset($_SESSION['coupon_code']);
+                $coupon_id = null;
+                $discount_percent = 0;
+                $coupon_msg = "Invalid or expired coupon code.";
+            }
         }
     }
-}
 
-$discount_amount = ($subtotal * $discount_percent) / 100;
-$total_amount = $subtotal - $discount_amount;
+    $discount_amount = ($subtotal * $discount_percent) / 100;
+    $total_amount = $subtotal - $discount_amount;
 
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
-    $address = trim($_POST['address'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $payment_method = $_POST['payment_method'] ?? 'Credit Card';
-    
-    if (empty($address) || empty($phone)) {
-        $error = "Shipping address and phone number are required.";
-    } else {
-        $pdo->beginTransaction();
-        try {
-            $invoice_no = 'INV-' . strtoupper(dechex(time())) . '-' . rand(100, 999);
-            $transaction_id = 'TXN-' . time() . '-' . rand(1000, 9999);
-            $coupon_code_val = !empty($coupon_code) ? $coupon_code : null;
+    if (isset($_POST['place_order'])) {
+        $address = trim($_POST['address'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $payment_method = $_POST['payment_method'] ?? 'Credit Card';
+        
+        if (empty($address) || empty($phone)) {
+            $error = "Shipping address and phone number are required.";
+        } else {
+            $pdo->beginTransaction();
+            try {
+                $invoice_no = 'INV-' . strtoupper(dechex(time())) . '-' . rand(100, 999);
+                $transaction_id = 'TXN-' . time() . '-' . rand(1000, 9999);
+                $coupon_code_val = !empty($coupon_code) ? $coupon_code : null;
 
-            // Insert Order directly with billing, shipping, discount and payment details
-            $insOrder = $pdo->prepare("
-                INSERT INTO orders (user_id, invoice_number, total_amount, discount_amount, coupon_code, payment_method, transaction_id, status, shipping_address) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'Processing', ?)
-            ");
-            $insOrder->execute([$user_id, $invoice_no, $total_amount, $discount_amount, $coupon_code_val, $payment_method, $transaction_id, $address]);
-            $order_id = $pdo->lastInsertId();
-            
-            // Insert Order Items (using unit_price column as in schema)
-            $insItem = $pdo->prepare("
-                INSERT INTO order_items (order_id, book_id, quantity, unit_price) 
-                VALUES (?, ?, ?, ?)
-            ");
-            foreach ($cart_items as $item) {
-                $insItem->execute([$order_id, $item['book_id'], $item['quantity'], $item['price']]);
+                // Insert Order directly with billing, shipping, discount and payment details
+                $insOrder = $pdo->prepare("
+                    INSERT INTO orders (user_id, invoice_number, total_amount, discount_amount, coupon_code, payment_method, transaction_id, status, shipping_address) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Processing', ?)
+                ");
+                $insOrder->execute([$user_id, $invoice_no, $total_amount, $discount_amount, $coupon_code_val, $payment_method, $transaction_id, $address]);
+                $order_id = $pdo->lastInsertId();
                 
-                // Deduct inventory
-                $deductStock = $pdo->prepare("UPDATE books SET stock = stock - ? WHERE id = ?");
-                $deductStock->execute([$item['quantity'], $item['book_id']]);
+                // Insert Order Items (using unit_price column as in schema)
+                $insItem = $pdo->prepare("
+                    INSERT INTO order_items (order_id, book_id, quantity, unit_price) 
+                    VALUES (?, ?, ?, ?)
+                ");
+                foreach ($cart_items as $item) {
+                    $insItem->execute([$order_id, $item['book_id'], $item['quantity'], $item['price']]);
+                    
+                    // Deduct inventory
+                    $deductStock = $pdo->prepare("UPDATE books SET stock = stock - ? WHERE id = ?");
+                    $deductStock->execute([$item['quantity'], $item['book_id']]);
+                }
+                
+                // Clear Cart
+                $clearCart = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
+                $clearCart->execute([$user_id]);
+                
+                // Clear Session coupon
+                unset($_SESSION['coupon_id']);
+                unset($_SESSION['coupon_discount']);
+                unset($_SESSION['coupon_code']);
+                
+                $pdo->commit();
+                header("Location: /order_confirmation.php?order_id=" . $order_id);
+                exit;
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                error_log("Order checkout error: " . $e->getMessage());
+                $error = "Failed to process order. Please try again.";
             }
-            
-            // Clear Cart
-            $clearCart = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
-            $clearCart->execute([$user_id]);
-            
-            // Clear Session coupon
-            unset($_SESSION['coupon_id']);
-            unset($_SESSION['coupon_discount']);
-            unset($_SESSION['coupon_code']);
-            
-            $pdo->commit();
-            header("Location: /order_confirmation.php?order_id=" . $order_id);
-            exit;
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $error = "Failed to process order. Details: " . $e->getMessage();
         }
     }
 }
@@ -147,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         <h3 class="fw-bold text-dark h5 mb-4 border-bottom pb-2">Shipping & Payment Details</h3>
         
         <form action="/checkout.php" method="POST">
+          <?php echo csrf_field(); ?>
           <div class="mb-3">
             <label for="phone" class="form-label small text-muted">Contact Phone Number <span class="text-danger">*</span></label>
             <input type="tel" name="phone" id="phone" class="form-control bg-light" required placeholder="E.g., +91 9988776655" value="<?php echo isset($_SESSION['user_phone']) ? sanitize($_SESSION['user_phone']) : ''; ?>">
@@ -212,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         <?php endif; ?>
 
         <form action="/checkout.php" method="POST" class="row g-2">
+          <?php echo csrf_field(); ?>
           <div class="col-8">
             <input type="text" name="coupon_code" class="form-control form-control-sm bg-light text-uppercase fw-bold" placeholder="E.g., WELCOME20" value="<?php echo sanitize($coupon_code); ?>">
           </div>

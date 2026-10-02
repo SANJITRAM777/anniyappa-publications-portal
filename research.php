@@ -9,6 +9,8 @@ $error = '';
 
 // Process research proposal submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_proposal'])) {
+    require_csrf_token();
+
     if (!is_logged_in()) {
         $_SESSION['login_redirect'] = "/research.php";
         header("Location: /login.php");
@@ -20,27 +22,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_proposal'])) {
     $abstract = trim($_POST['abstract'] ?? '');
     
     // Check file upload
-    if (empty($proposal_title) || empty($abstract) || !isset($_FILES['proposal_file'])) {
-        $error = "Please fill in all fields and select a proposal PDF.";
+    if ($project_id <= 0 || empty($proposal_title) || empty($abstract) || !isset($_FILES['proposal_file'])) {
+        $error = "Please fill in all fields and select a proposal PDF or DOCX file.";
     } else {
-        $file = $_FILES['proposal_file'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        
-        if ($ext !== 'pdf') {
-            $error = "Only PDF documents are allowed.";
-        } elseif ($file['size'] > 5000000) { // 5MB limit
-            $error = "File size cannot exceed 5MB.";
+        $val = validate_uploaded_file(
+            $_FILES['proposal_file'],
+            ['pdf', 'docx'],
+            ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            5242880 // 5MB limit
+        );
+
+        if (!$val['valid']) {
+            $error = "Proposal document rejected: " . $val['error'];
         } else {
-            // Safe upload filename
-            $filename = 'proposal_' . time() . '_' . rand(1000, 9999) . '.pdf';
+            $ext = $val['ext'];
+            $filename = 'proposal_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             $dest = __DIR__ . '/uploads/proposals/' . $filename;
             
-            // Create folder if not exists
             if (!is_dir(__DIR__ . '/uploads/proposals/')) {
-                mkdir(__DIR__ . '/uploads/proposals/', 0777, true);
+                mkdir(__DIR__ . '/uploads/proposals/', 0775, true);
             }
             
-            if (move_uploaded_file($file['tmp_name'], $dest)) {
+            if (move_uploaded_file($_FILES['proposal_file']['tmp_name'], $dest)) {
                 try {
                     $stmt = $pdo->prepare("
                         INSERT INTO proposals (project_id, author_id, proposal_title, abstract, file_path, status) 
@@ -49,7 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_proposal'])) {
                     $stmt->execute([$project_id, get_logged_in_user_id(), $proposal_title, $abstract, 'uploads/proposals/' . $filename]);
                     $success = "Your chapter proposal has been submitted successfully! Reviewers will assess the details.";
                 } catch (PDOException $e) {
-                    $error = "Database error: " . $e->getMessage();
+                    error_log("Proposal upload error: " . $e->getMessage());
+                    $error = "Failed to submit proposal due to a database error.";
                 }
             } else {
                 $error = "Failed to upload proposal document file. Please ensure upload permissions are set.";
@@ -120,6 +124,7 @@ $projects = $projectsStmt->fetchAll();
               <!-- Proposal Form Collapse -->
               <div class="collapse mt-4 pt-3 border-top" id="proposalForm<?php echo $proj['id']; ?>">
                 <form action="/research.php" method="POST" enctype="multipart/form-data" class="p-3 bg-light rounded-3">
+                  <?php echo csrf_field(); ?>
                   <input type="hidden" name="project_id" value="<?php echo $proj['id']; ?>">
                   <h5 class="fw-bold text-dark h6 mb-3">Submit Chapter Details</h5>
                   

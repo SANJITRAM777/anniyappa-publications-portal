@@ -9,6 +9,7 @@ $error = '';
 
 // Handle event registration
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_event'])) {
+    require_csrf_token();
     if (!is_logged_in()) {
         $_SESSION['login_redirect'] = "/events.php";
         header("Location: /login.php");
@@ -47,7 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_event'])) {
             if (isset($pdo) && $pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            $error = "Registration failed: " . $e->getMessage();
+            error_log("Event registration error: " . $e->getMessage());
+            $error = "Registration failed. Please try again.";
         }
     }
 }
@@ -130,6 +132,7 @@ if (is_logged_in()) {
                     </div>
                   <?php else: ?>
                     <form action="/events.php" method="POST">
+                      <?php echo csrf_field(); ?>
                       <input type="hidden" name="event_id" value="<?php echo $event['id']; ?>">
                       <button type="submit" name="register_event" class="btn btn-primary btn-sm rounded-pill px-4">
                         Register Slot <i class="bi bi-arrow-right-short ms-1"></i>

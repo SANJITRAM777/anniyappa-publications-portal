@@ -8,6 +8,7 @@ $success_msg = '';
 $error_msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $name = trim($_POST['name'] ?? '');
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $subject = trim($_POST['subject'] ?? '');
@@ -23,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Clear post fields
             $name = $email = $subject = $message = '';
         } catch (PDOException $e) {
-            $error_msg = "Failed to submit inquiry. Please try again. Error: " . $e->getMessage();
+            error_log("Contact inquiry error: " . $e->getMessage());
+            $error_msg = "Failed to submit inquiry. Please try again.";
         }
     }
 }
@@ -106,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
 
           <form action="/contact.php" method="POST">
+            <?php echo csrf_field(); ?>
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="conName" class="form-label">Full Name</label>

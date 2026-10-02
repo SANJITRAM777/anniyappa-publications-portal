@@ -42,6 +42,11 @@ if ($course_id > 0) {
     }
 }
 
+// Process POST Actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
+}
+
 // Process Add Lesson
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_lesson'])) {
     $title = trim($_POST['title'] ?? '');
@@ -51,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_lesson'])) {
     
     if (empty($title)) {
         $error = "Lesson title is required.";
+    } elseif (!$active_course) {
+        $error = "No active course selected.";
     } else {
         try {
             $insLes = $pdo->prepare("
@@ -60,29 +67,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_lesson'])) {
             $insLes->execute([$course_id, $title, $video_url, $content_text, $order_no]);
             $lesson_id = $pdo->lastInsertId();
             
-            // Handle optional PDF material upload
+            // Handle optional PDF/DOCX material upload with strict validation
             if (isset($_FILES['material_file']) && $_FILES['material_file']['error'] === UPLOAD_ERR_OK) {
-                $file = $_FILES['material_file'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $filename = 'material_' . $lesson_id . '_' . time() . '.' . $ext;
-                $dest = __DIR__ . '/../uploads/books/' . $filename; // reuse upload directory
-                
-                if (!is_dir(__DIR__ . '/../uploads/books/')) {
-                    mkdir(__DIR__ . '/../uploads/books/', 0777, true);
-                }
-                
-                if (move_uploaded_file($file['tmp_name'], $dest)) {
-                    $insMat = $pdo->prepare("INSERT INTO course_materials (lesson_id, title, file_path, type) VALUES (?, ?, ?, ?)");
-                    $insMat->execute([$lesson_id, $title . " Reading PDF", 'uploads/books/' . $filename, strtoupper($ext)]);
+                $val = validate_uploaded_file(
+                    $_FILES['material_file'],
+                    ['pdf', 'docx'],
+                    ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+                    10485760
+                );
+                if ($val['valid']) {
+                    $ext = $val['ext'];
+                    $filename = 'material_' . $lesson_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $dest = __DIR__ . '/../uploads/books/' . $filename;
+                    
+                    if (!is_dir(__DIR__ . '/../uploads/books/')) {
+                        mkdir(__DIR__ . '/../uploads/books/', 0775, true);
+                    }
+                    
+                    if (move_uploaded_file($_FILES['material_file']['tmp_name'], $dest)) {
+                        $insMat = $pdo->prepare("INSERT INTO course_materials (lesson_id, title, file_path, type) VALUES (?, ?, ?, ?)");
+                        $insMat->execute([$lesson_id, $title . " Reading Material", 'uploads/books/' . $filename, strtoupper($ext)]);
+                    }
+                } else {
+                    $error = "Lesson created, but material upload was rejected: " . $val['error'];
                 }
             }
             
-            $success = "Lesson added successfully to the syllabus!";
+            if (empty($error)) {
+                $success = "Lesson added successfully to the syllabus!";
+            }
             // Refresh
             $lesStmt->execute([$course_id]);
             $lessons = $lesStmt->fetchAll();
         } catch (PDOException $e) {
-            $error = "Failed to add lesson: " . $e->getMessage();
+            error_log("Add lesson error: " . $e->getMessage());
+            $error = "Failed to add lesson due to a database error.";
         }
     }
 }
@@ -93,6 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_quiz'])) {
     
     if (empty($quiz_title)) {
         $error = "Quiz title is required.";
+    } elseif (!$active_course) {
+        $error = "No active course selected.";
     } else {
         try {
             $insQz = $pdo->prepare("INSERT INTO quizzes (course_id, title) VALUES (?, ?)");
@@ -102,7 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_quiz'])) {
             $qzStmt->execute([$course_id]);
             $quizzes = $qzStmt->fetchAll();
         } catch (PDOException $e) {
-            $error = "Failed to create quiz: " . $e->getMessage();
+            error_log("Add quiz error: " . $e->getMessage());
+            $error = "Failed to create quiz due to a database error.";
         }
     }
 }
@@ -120,15 +142,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
     if ($quiz_id <= 0 || empty($q_text) || empty($opt_a) || empty($opt_b) || empty($opt_c) || empty($opt_d)) {
         $error = "All question fields and option details are required.";
     } else {
-        try {
-            $insQQ = $pdo->prepare("
-                INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $insQQ->execute([$quiz_id, $q_text, $opt_a, $opt_b, $opt_c, $opt_d, $correct]);
-            $success = "Quiz question added successfully!";
-        } catch (PDOException $e) {
-            $error = "Failed to add question: " . $e->getMessage();
+        // IDOR Verification: Ensure the quiz belongs to a course instructed by current user
+        $chkQuiz = $pdo->prepare("
+            SELECT q.id 
+            FROM quizzes q 
+            JOIN courses c ON q.course_id = c.id 
+            WHERE q.id = ? AND c.instructor_id = ?
+        ");
+        $chkQuiz->execute([$quiz_id, $instructor_id]);
+        if (!$chkQuiz->fetch()) {
+            $error = "Unauthorized action. You do not own the course for this quiz.";
+        } else {
+            try {
+                $insQQ = $pdo->prepare("
+                    INSERT INTO quiz_questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $insQQ->execute([$quiz_id, $q_text, $opt_a, $opt_b, $opt_c, $opt_d, $correct]);
+                $success = "Quiz question added successfully!";
+            } catch (PDOException $e) {
+                error_log("Add quiz question error: " . $e->getMessage());
+                $error = "Failed to add question due to a database error.";
+            }
         }
     }
 }
@@ -223,6 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
                     <!-- Question builder collapse -->
                     <div class="collapse border rounded-3 p-3 bg-light mt-2 mb-3" id="questionCollapse<?php echo $qz['id']; ?>">
                       <form action="/faculty/manage_courses.php?course_id=<?php echo $course_id; ?>" method="POST">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="quiz_id" value="<?php echo $qz['id']; ?>">
                         <h6 class="fw-bold text-dark mb-3">Add MC Question</h6>
                         
@@ -269,6 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
               <h3 class="fw-bold text-dark h5 mb-3 border-bottom pb-2">Add New Lesson</h3>
               
               <form action="/faculty/manage_courses.php?course_id=<?php echo $course_id; ?>" method="POST" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
                 <div class="mb-2">
                   <label class="form-label small text-muted">Lesson Title <span class="text-danger">*</span></label>
                   <input type="text" name="title" class="form-control bg-light" required placeholder="E.g., Typesetting Matrices in LaTeX">
@@ -288,8 +325,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
                   <textarea name="content_text" rows="4" class="form-control bg-light" placeholder="Enter lesson notes, description, coding instructions..."></textarea>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label small text-muted">Reference PDF Attachment (Optional)</label>
-                  <input type="file" name="material_file" class="form-control bg-light" accept=".pdf">
+                  <label class="form-label small text-muted">Reference PDF/DOCX Attachment (Optional)</label>
+                  <input type="file" name="material_file" class="form-control bg-light" accept=".pdf,.docx">
                 </div>
                 <button type="submit" name="add_lesson" class="btn btn-primary rounded-pill px-4 py-2 small">Add Lesson Chapter</button>
               </form>
@@ -299,6 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_question'])) {
             <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius:15px;">
               <h3 class="fw-bold text-dark h5 mb-3 border-bottom pb-2">Create Quiz</h3>
               <form action="/faculty/manage_courses.php?course_id=<?php echo $course_id; ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <div class="mb-3">
                   <label class="form-label small text-muted">Quiz Title <span class="text-danger">*</span></label>
                   <input type="text" name="quiz_title" class="form-control bg-light" required placeholder="E.g., LaTeX Equations Assessment">

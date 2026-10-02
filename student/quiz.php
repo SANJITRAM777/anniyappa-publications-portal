@@ -19,6 +19,29 @@ if (!$quiz) {
     exit;
 }
 
+// Access Control: Require student to be actively enrolled in the course
+$enrollChk = $pdo->prepare("SELECT id FROM course_enrollments WHERE course_id = ? AND student_id = ?");
+$enrollChk->execute([$quiz['course_id'], $student_id]);
+if (!$enrollChk->fetch()) {
+    http_response_code(403);
+    echo "<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Enrollment Required</title>
+        <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
+    </head>
+    <body class='bg-light d-flex align-items-center justify-content-center vh-100'>
+        <div class='card text-center p-5 shadow' style='max-width: 500px; border-radius: 15px;'>
+            <div class='text-warning fs-1 mb-3'><i class='bi bi-lock-fill'></i></div>
+            <h1 class='h4 text-dark mb-3'>Enrollment Required</h1>
+            <p class='text-muted'>You must be actively enrolled in this course before taking quizzes or earning certificates.</p>
+            <a href='/student/courses.php' class='btn btn-primary rounded-pill mt-2'>View My Courses</a>
+        </div>
+    </body>
+    </html>";
+    exit;
+}
+
 // Fetch questions
 $questionsStmt = $pdo->prepare("SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY id ASC");
 $questionsStmt->execute([$quiz_id]);
@@ -31,6 +54,8 @@ $results_recorded = false;
 $certificate_issued = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quiz'])) {
+    require_csrf_token();
+
     $answers = $_POST['answers'] ?? [];
     
     foreach ($questions as $q) {
@@ -136,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quiz'])) {
         <?php else: ?>
           <!-- Question Form -->
           <form action="/student/quiz.php?quiz_id=<?php echo $quiz_id; ?>" method="POST">
+            <?php echo csrf_field(); ?>
             <?php foreach ($questions as $index => $q): ?>
               <div class="mb-4 p-4 border rounded-3 bg-light">
                 <h5 class="fw-bold text-dark h6 mb-3"><strong>Question <?php echo $index + 1; ?>:</strong> <?php echo sanitize($q['question_text']); ?></h5>

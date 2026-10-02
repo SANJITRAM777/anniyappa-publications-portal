@@ -9,6 +9,8 @@ $error = '';
 
 // Handle internship application
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_internship'])) {
+    require_csrf_token();
+
     if (!is_logged_in()) {
         $_SESSION['login_redirect'] = "/internship.php";
         header("Location: /login.php");
@@ -32,24 +34,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_internship'])) 
             if ($check->fetch()) {
                 $error = "You have already applied for this internship program.";
             } else {
-                $file = $_FILES['resume'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                
-                if ($ext !== 'pdf' && $ext !== 'docx') {
-                    $error = "Only PDF and DOCX documents are allowed.";
-                } elseif ($file['size'] > 5000000) {
-                    $error = "File size cannot exceed 5MB.";
+                $val = validate_uploaded_file(
+                    $_FILES['resume'],
+                    ['pdf', 'docx'],
+                    ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+                    5242880 // 5MB limit
+                );
+
+                if (!$val['valid']) {
+                    $error = "Resume upload rejected: " . $val['error'];
                 } else {
-                    $filename = 'resume_' . $user_id . '_' . time() . '.' . $ext;
+                    $ext = $val['ext'];
+                    $filename = 'resume_' . $user_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                     $dest = __DIR__ . '/uploads/resumes/' . $filename;
                     
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
+                    if (!is_dir(__DIR__ . '/uploads/resumes/')) {
+                        mkdir(__DIR__ . '/uploads/resumes/', 0775, true);
+                    }
+
+                    if (move_uploaded_file($_FILES['resume']['tmp_name'], $dest)) {
                         try {
                             $stmt = $pdo->prepare("INSERT INTO applications (internship_id, student_id, resume_path, status) VALUES (?, ?, ?, 'Pending')");
                             $stmt->execute([$internship_id, $user_id, 'uploads/resumes/' . $filename]);
                             $success = "Your internship application has been submitted successfully! Check progress in your dashboard.";
                         } catch (PDOException $e) {
-                            $error = "Database error: " . $e->getMessage();
+                            error_log("Internship application error: " . $e->getMessage());
+                            $error = "Failed to submit application due to a database error.";
                         }
                     } else {
                         $error = "Failed to upload resume file. Please try again.";
@@ -207,6 +217,7 @@ $internships = $internshipsStmt->fetchAll();
                   <!-- Application file form collapse -->
                   <div class="collapse mt-3" id="applyCollForm<?php echo $intern['id']; ?>">
                     <form action="/internship.php#activeInternshipsSection" method="POST" enctype="multipart/form-data" class="p-3 bg-light rounded-3 border">
+                      <?php echo csrf_field(); ?>
                       <input type="hidden" name="internship_id" value="<?php echo $intern['id']; ?>">
                       <h5 class="fw-bold text-dark h6 mb-2">Upload Resume Details</h5>
                       <div class="mb-3">

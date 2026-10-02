@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_attendance'])) {
 
 // Handle Assignment Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_assignment'])) {
+    require_csrf_token();
+
     $internship_id = (int)($_POST['internship_id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -38,35 +40,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_assignment']))
     if ($internship_id <= 0 || empty($title) || !isset($_FILES['assignment_file'])) {
         $error = "Please fill in all required fields and upload an assignment document.";
     } else {
-        $file = $_FILES['assignment_file'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        
-        if (!in_array($ext, ['pdf', 'zip', 'docx'])) {
-            $error = "Only PDF, ZIP, and DOCX files are allowed.";
-        } elseif ($file['size'] > 10000000) { // 10MB limit
-            $error = "File size cannot exceed 10MB.";
+        // IDOR / Access Control: verify student has an Approved application for this internship
+        $chkApp = $pdo->prepare("SELECT id FROM applications WHERE internship_id = ? AND student_id = ? AND status = 'Approved'");
+        $chkApp->execute([$internship_id, $student_id]);
+        if (!$chkApp->fetch()) {
+            $error = "Unauthorized: You must have an approved application for this internship before submitting assignments.";
         } else {
-            $filename = 'assignment_' . $student_id . '_' . time() . '.' . $ext;
-            $dest = __DIR__ . '/../uploads/assignments/' . $filename;
-            
-            // Create folder if not exists
-            if (!is_dir(__DIR__ . '/../uploads/assignments/')) {
-                mkdir(__DIR__ . '/../uploads/assignments/', 0777, true);
-            }
-            
-            if (move_uploaded_file($file['tmp_name'], $dest)) {
-                try {
-                    $stmt = $pdo->prepare("
-                        INSERT INTO assignments (internship_id, student_id, title, description, file_path, status, submitted_at) 
-                        VALUES (?, ?, ?, ?, ?, 'Submitted', CURRENT_TIMESTAMP)
-                    ");
-                    $stmt->execute([$internship_id, $student_id, $title, $description, 'uploads/assignments/' . $filename]);
-                    $success = "Assignment submitted successfully! Faculty will evaluate and assign grades.";
-                } catch (PDOException $e) {
-                    $error = "Database error: " . $e->getMessage();
-                }
+            $val = validate_uploaded_file(
+                $_FILES['assignment_file'],
+                ['pdf', 'docx', 'zip'],
+                ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip', 'application/x-zip-compressed'],
+                10485760 // 10MB limit
+            );
+
+            if (!$val['valid']) {
+                $error = "Assignment file upload rejected: " . $val['error'];
             } else {
-                $error = "Failed to upload assignment file. Please verify folder permissions.";
+                $ext = $val['ext'];
+                $filename = 'assignment_' . $student_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $dest = __DIR__ . '/../uploads/assignments/' . $filename;
+                
+                // Create folder if not exists
+                if (!is_dir(__DIR__ . '/../uploads/assignments/')) {
+                    mkdir(__DIR__ . '/../uploads/assignments/', 0775, true);
+                }
+                
+                if (move_uploaded_file($_FILES['assignment_file']['tmp_name'], $dest)) {
+                    try {
+                        $stmt = $pdo->prepare("
+                            INSERT INTO assignments (internship_id, student_id, title, description, file_path, status, submitted_at) 
+                            VALUES (?, ?, ?, ?, ?, 'Submitted', CURRENT_TIMESTAMP)
+                        ");
+                        $stmt->execute([$internship_id, $student_id, $title, $description, 'uploads/assignments/' . $filename]);
+                        $success = "Assignment submitted successfully! Faculty will evaluate and assign grades.";
+                    } catch (PDOException $e) {
+                        error_log("Assignment submission error: " . $e->getMessage());
+                        $error = "Database error saving assignment submission.";
+                    }
+                } else {
+                    $error = "Failed to upload assignment file. Please verify folder permissions.";
+                }
             }
         }
     }
@@ -242,6 +255,7 @@ $attendance_logs = $attendanceStmt->fetchAll();
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form action="/student/internships.php" method="POST" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
                 <div class="modal-body p-4 bg-light">
                   
                   <div class="mb-3">

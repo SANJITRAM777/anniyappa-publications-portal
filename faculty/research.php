@@ -10,6 +10,10 @@ $instructor_id = get_logged_in_user_id();
 $success = '';
 $error = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
+}
+
 // Handle creating research project
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
     $title = trim($_POST['title'] ?? '');
@@ -23,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
             $stmt->execute([$title, $description, $instructor_id]);
             $success = "Research collaboration project opened successfully!";
         } catch (PDOException $e) {
-            $error = "Failed to create project: " . $e->getMessage();
+            error_log("Create project error: " . $e->getMessage());
+            $error = "Failed to create project due to a database error.";
         }
     }
 }
@@ -32,9 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_proposal_status'])) {
     $proposal_id = (int)($_POST['proposal_id'] ?? 0);
     $status = $_POST['status'] ?? '';
+    $allowed_status = ['Pending', 'Approved', 'Rejected'];
     
-    if ($proposal_id <= 0 || empty($status)) {
-        $error = "Proposal ID and status are required.";
+    if ($proposal_id <= 0 || !in_array($status, $allowed_status, true)) {
+        $error = "Valid proposal ID and status are required.";
     } else {
         try {
             // Verify ownership
@@ -49,15 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_proposal_statu
             if ($checkStmt->fetch()) {
                 $stmt = $pdo->prepare("UPDATE proposals SET status = ? WHERE id = ?");
                 $stmt->execute([$status, $proposal_id]);
-                
-                // If proposal accepted, also issue a certificate of collaboration if needed
-                // For simplicity, we just save the status.
                 $success = "Proposal status updated to '$status' successfully!";
             } else {
                 $error = "Unauthorized action. You are not the lead of this project.";
             }
         } catch (PDOException $e) {
-            $error = "Failed to update status: " . $e->getMessage();
+            error_log("Update proposal status error: " . $e->getMessage());
+            $error = "Failed to update proposal status due to a database error.";
         }
     }
 }
@@ -124,6 +128,7 @@ $scholar_proposals = $proposalsStmt->fetchAll();
           <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius:15px;">
             <h3 class="fw-bold text-dark h5 mb-3 border-bottom pb-2">Create Collaborative Call</h3>
             <form action="/faculty/research.php" method="POST">
+              <?php echo csrf_field(); ?>
               <div class="mb-3">
                 <label for="pTitle" class="form-label small text-muted">Project Title <span class="text-danger">*</span></label>
                 <input type="text" name="title" id="pTitle" class="form-control bg-light" required placeholder="E.g., Quantum Cryptographic Signatures in IoT">
@@ -163,7 +168,7 @@ $scholar_proposals = $proposalsStmt->fetchAll();
             <?php else: ?>
               <?php foreach ($scholar_proposals as $prop): 
                 $status_color = 'bg-warning text-dark';
-                if ($prop['status'] === 'Accepted') $status_color = 'bg-success text-white';
+                if ($prop['status'] === 'Approved') $status_color = 'bg-success text-white';
                 if ($prop['status'] === 'Rejected') $status_color = 'bg-danger text-white';
               ?>
                 <div class="border rounded-3 p-3 bg-light mb-3">
@@ -176,14 +181,14 @@ $scholar_proposals = $proposalsStmt->fetchAll();
                   <p class="text-muted mt-2 small" style="font-size:0.75rem;"><?php echo sanitize($prop['abstract']); ?></p>
                   
                   <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                    <a href="/download.php?type=proposal&id=<?php echo $prop['id']; ?>" class="btn btn-outline-secondary btn-sm px-2.5 rounded-pill font-monospace" style="font-size: 0.7rem;" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                    <a href="/download.php?type=proposal&id=<?php echo $prop['id']; ?>" class="btn btn-outline-secondary btn-sm px-2.5 rounded-pill font-monospace" style="font-size: 0.7rem;" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Document</a>
                     
                     <form action="/faculty/research.php" method="POST" class="d-flex align-items-center gap-1">
+                      <?php echo csrf_field(); ?>
                       <input type="hidden" name="proposal_id" value="<?php echo $prop['id']; ?>">
                       <select name="status" class="form-select form-select-sm bg-white py-1" style="width: 100px; font-size: 0.7rem; border-radius: 5px;" required>
                         <option value="Pending" <?php echo $prop['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
-                        <option value="Under_Review" <?php echo $prop['status'] === 'Under_Review' ? 'selected' : ''; ?>>Under Review</option>
-                        <option value="Accepted" <?php echo $prop['status'] === 'Accepted' ? 'selected' : ''; ?>>Accept</option>
+                        <option value="Approved" <?php echo $prop['status'] === 'Approved' ? 'selected' : ''; ?>>Approve</option>
                         <option value="Rejected" <?php echo $prop['status'] === 'Rejected' ? 'selected' : ''; ?>>Reject</option>
                       </select>
                       <button type="submit" name="update_proposal_status" class="btn btn-primary btn-sm rounded-3 py-1 px-2"><i class="bi bi-check-lg" style="font-size: 0.7rem;"></i></button>

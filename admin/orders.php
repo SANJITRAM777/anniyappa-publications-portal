@@ -10,6 +10,7 @@ $success = $error = '';
 
 // ─── POST Actions ─────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'update_order_status') {
@@ -17,17 +18,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_status = trim($_POST['new_status'] ?? '');
         $allowed    = ['Pending','Processing','Shipped','Delivered','Cancelled','Refunded'];
         if (in_array($new_status, $allowed)) {
-            $pdo->prepare("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?")
-                ->execute([$new_status, $id]);
-            $success = "Order status updated to <strong>" . sanitize($new_status) . "</strong>.";
+            try {
+                $pdo->prepare("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?")
+                    ->execute([$new_status, $id]);
+                $success = "Order status updated to <strong>" . sanitize($new_status) . "</strong>.";
+            } catch (PDOException $e) {
+                error_log("Update order status error: " . $e->getMessage());
+                $error = "Failed to update order status.";
+            }
         }
     }
 
     if ($action === 'delete_order') {
         $id = (int)$_POST['order_id'];
-        $pdo->prepare("DELETE FROM order_items WHERE order_id = ?")->execute([$id]);
-        $pdo->prepare("DELETE FROM orders WHERE id = ?")->execute([$id]);
-        $success = "Order record deleted.";
+        try {
+            $pdo->prepare("DELETE FROM order_items WHERE order_id = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM orders WHERE id = ?")->execute([$id]);
+            $success = "Order record deleted.";
+        } catch (PDOException $e) {
+            error_log("Delete order error: " . $e->getMessage());
+            $error = "Failed to delete order record.";
+        }
     }
 }
 
@@ -283,6 +294,7 @@ $months_revenue = json_encode(array_column($monthly, 'revenue'));
                             <?php foreach (['Pending','Processing','Shipped','Delivered','Cancelled','Refunded'] as $ns): ?>
                               <li>
                                 <form method="POST" class="px-2 py-1">
+                                  <?php echo csrf_field(); ?>
                                   <input type="hidden" name="action" value="update_order_status">
                                   <input type="hidden" name="order_id" value="<?php echo $ord['id']; ?>">
                                   <input type="hidden" name="new_status" value="<?php echo $ns; ?>">
@@ -294,6 +306,7 @@ $months_revenue = json_encode(array_column($monthly, 'revenue'));
                         </div>
                         <!-- Delete -->
                         <form method="POST" class="d-inline" onsubmit="return confirm('Delete this order record permanently?')">
+                          <?php echo csrf_field(); ?>
                           <input type="hidden" name="action" value="delete_order">
                           <input type="hidden" name="order_id" value="<?php echo $ord['id']; ?>">
                           <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2" title="Delete"><i class="bi bi-trash"></i></button>

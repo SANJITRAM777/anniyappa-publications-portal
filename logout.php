@@ -1,7 +1,16 @@
 <?php
 // Session logout script
+require_once __DIR__ . '/includes/functions.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+$token = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? '';
+if (!verify_csrf_token($token)) {
+    // Reject forged logout attempts (e.g. <img> tags embedded by third parties)
+    header("Location: /index.php");
+    exit;
 }
 
 // Unset all session variables

@@ -16,6 +16,8 @@ $profStmt->execute([$user_id]);
 $profile = $profStmt->fetch();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
+    require_csrf_token();
+
     $full_name = trim($_POST['full_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $address = trim($_POST['address'] ?? '');
@@ -26,25 +28,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
     } else {
         $pic_filename = $profile['profile_pic'] ?? 'default_avatar.png';
         
-        // Handle avatar upload
+        // Handle avatar upload with strict MIME and size verification
         if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
-            $file = $_FILES['profile_pic'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            
-            if (in_array($ext, ['png', 'jpg', 'jpeg'])) {
-                $new_filename = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
+            $val = validate_uploaded_file(
+                $_FILES['profile_pic'],
+                ['png', 'jpg', 'jpeg', 'webp'],
+                ['image/png', 'image/jpeg', 'image/webp'],
+                2097152 // 2MB limit
+            );
+            if ($val['valid']) {
+                $ext = $val['ext'];
+                $new_filename = 'avatar_' . $user_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                 $dest = __DIR__ . '/../uploads/profile_pics/' . $new_filename;
                 
                 if (!is_dir(__DIR__ . '/../uploads/profile_pics/')) {
-                    mkdir(__DIR__ . '/../uploads/profile_pics/', 0777, true);
+                    mkdir(__DIR__ . '/../uploads/profile_pics/', 0775, true);
                 }
                 
-                if (move_uploaded_file($file['tmp_name'], $dest)) {
+                if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $dest)) {
                     $pic_filename = $new_filename;
                     $_SESSION['user_pic'] = $new_filename;
                 }
             } else {
-                $error = "Only PNG, JPG, and JPEG avatars are allowed.";
+                $error = "Avatar upload rejected: " . $val['error'];
             }
         }
         
@@ -64,7 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
                 $profStmt->execute([$user_id]);
                 $profile = $profStmt->fetch();
             } catch (PDOException $e) {
-                $error = "Failed to update profile: " . $e->getMessage();
+                error_log("Update profile error: " . $e->getMessage());
+                $error = "Failed to update profile due to a system error.";
             }
         }
     }
@@ -111,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
         <?php endif; ?>
 
         <form action="/student/profile.php" method="POST" enctype="multipart/form-data">
+          <?php echo csrf_field(); ?>
           
           <div class="row mb-4 align-items-center">
             <div class="col-md-3 text-center text-md-start">

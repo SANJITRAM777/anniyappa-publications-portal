@@ -21,10 +21,12 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
+
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $full_name = trim($_POST['full_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
-    $role_id = (int)($_POST['role_id'] ?? 3); // Default to Student (id=3)
+    $role_id = 3; // Strictly enforce Student role for public registrations
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
@@ -33,10 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Please fill in all required fields.";
     } elseif ($password !== $confirm_password) {
         $error = "Passwords do not match.";
-    } elseif (strlen($password) < 6) {
-        $error = "Password must be at least 6 characters long.";
-    } elseif (!in_array($role_id, [2, 3, 4])) { // Only allow registering Faculty, Student, Author (Admins created via DB/Seeder)
-        $error = "Invalid registration role.";
+    } elseif (strlen($password) < 8) {
+        $error = "Password must be at least 8 characters long.";
     } else {
         // Check if email already exists
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
@@ -62,30 +62,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Insert Profile
                 $insertProfile = $pdo->prepare("INSERT INTO user_profiles (user_id, full_name, phone, bio, profile_pic) VALUES (?, ?, ?, ?, 'default_avatar.png')");
-                $role_name = ($role_id == 2) ? 'Faculty member' : (($role_id == 4) ? 'Author contributor' : 'Student enrolled');
-                $insertProfile->execute([$user_id, $full_name, $phone, "New $role_name on Anniyappa Publications."]);
-
-                // Special role mappings
-                if ($role_id == 4) { // Author
-                    $insertAuthor = $pdo->prepare("INSERT INTO authors (user_id, name, bio) VALUES (?, ?, ?)");
-                    $insertAuthor->execute([$user_id, $full_name, "Registered portal author."]);
-                }
+                $insertProfile->execute([$user_id, $full_name, $phone, "New Student enrolled on Anniyappa Publications."]);
 
                 $pdo->commit();
                 $success = "Registration successful! You can now sign in.";
                 
                 // Automatically log them in
                 if (attempt_login($email, $password, $pdo)) {
-                    if ($role_id == 2 || $role_id == 4) {
-                        header("Location: /faculty/dashboard.php");
-                    } else {
-                        header("Location: /student/dashboard.php");
-                    }
+                    header("Location: /student/dashboard.php");
                     exit;
                 }
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Registration failed. Please try again. Details: " . $e->getMessage();
+                error_log("Registration error: " . $e->getMessage());
+                $error = "Registration failed due to a system error. Please try again later.";
             }
         }
     }
@@ -115,20 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form action="/register.php" method="POST">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control bg-light" id="full_name" name="full_name" required placeholder="E.g. Rajesh Kumar" value="<?php echo isset($full_name) ? sanitize($full_name) : ''; ?>">
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="role_id" class="form-label">Account Role <span class="text-danger">*</span></label>
-                  <select class="form-select bg-light" id="role_id" name="role_id" required>
-                    <option value="3" <?php echo (isset($role_id) && $role_id == 3) ? 'selected' : ''; ?>>Student / Learner</option>
-                    <option value="2" <?php echo (isset($role_id) && $role_id == 2) ? 'selected' : ''; ?>>Faculty / Instructor</option>
-                    <option value="4" <?php echo (isset($role_id) && $role_id == 4) ? 'selected' : ''; ?>>Author / Researcher</option>
-                  </select>
-                </div>
+              <?php echo csrf_field(); ?>
+              
+              <div class="mb-3">
+                <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control bg-light" id="full_name" name="full_name" required placeholder="E.g. Rajesh Kumar" value="<?php echo isset($full_name) ? sanitize($full_name) : ''; ?>">
               </div>
 
               <div class="row">
@@ -146,13 +127,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                  <input type="password" class="form-control bg-light" id="password" name="password" required placeholder="At least 6 chars">
+                  <input type="password" class="form-control bg-light" id="password" name="password" required minlength="8" placeholder="At least 8 chars">
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-6 mb-3">
                   <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                  <input type="password" class="form-control bg-light" id="confirm_password" name="confirm_password" required placeholder="Retype password">
+                  <input type="password" class="form-control bg-light" id="confirm_password" name="confirm_password" required minlength="8" placeholder="Retype password">
                 </div>
+              </div>
+
+              <div class="alert alert-light border small text-muted py-2 mb-4">
+                <i class="bi bi-info-circle me-1 text-primary"></i>New registrations are created as <strong>Student</strong> accounts. Faculty and Author access is granted by the system administrator.
               </div>
 
               <button type="submit" class="btn btn-primary-custom w-100 rounded-pill py-2.5">

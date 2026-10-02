@@ -20,6 +20,8 @@ if (is_logged_in()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
+
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
 
@@ -27,21 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Please fill in all fields.";
     } else {
         if (attempt_login($email, $password, $pdo)) {
-            // Check if redirect is set
+            // Check if redirect is set and strictly local
             if (isset($_SESSION['login_redirect'])) {
                 $redirect = $_SESSION['login_redirect'];
                 unset($_SESSION['login_redirect']);
-                header("Location: " . $redirect);
-            } else {
-                // Role based redirect
-                $role = get_logged_in_role();
-                if ($role === 'Admin') {
-                    header("Location: /admin/dashboard.php");
-                } elseif ($role === 'Faculty' || $role === 'Author') {
-                    header("Location: /faculty/dashboard.php");
-                } else {
-                    header("Location: /student/dashboard.php");
+                if (strpos($redirect, '/') === 0 && strpos($redirect, '//') !== 0) {
+                    header("Location: " . $redirect);
+                    exit;
                 }
+            }
+            
+            // Role based redirect
+            $role = get_logged_in_role();
+            if ($role === 'Admin') {
+                header("Location: /admin/dashboard.php");
+            } elseif ($role === 'Faculty' || $role === 'Author') {
+                header("Location: /faculty/dashboard.php");
+            } else {
+                header("Location: /student/dashboard.php");
             }
             exit;
         } else {
@@ -70,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form action="/login.php" method="POST">
+              <?php echo csrf_field(); ?>
               <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="input-group">

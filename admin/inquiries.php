@@ -10,62 +10,68 @@ $success = $error = '';
 
 // ─── POST Actions ──────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $action = $_POST['action'] ?? '';
 
-    // Mark as Read
-    if ($action === 'mark_read') {
-        $id = (int)$_POST['inquiry_id'];
-        $pdo->prepare("UPDATE inquiries SET status = 'Read', updated_at = NOW() WHERE id = ?")
-            ->execute([$id]);
-        $success = "Inquiry marked as read.";
-    }
-
-    // Mark as Resolved
-    if ($action === 'mark_resolved') {
-        $id = (int)$_POST['inquiry_id'];
-        $pdo->prepare("UPDATE inquiries SET status = 'Resolved', updated_at = NOW() WHERE id = ?")
-            ->execute([$id]);
-        $success = "Inquiry marked as <strong>Resolved</strong>.";
-    }
-
-    // Send Reply (store reply + mark resolved)
-    if ($action === 'send_reply') {
-        $id    = (int)$_POST['inquiry_id'];
-        $reply = trim($_POST['reply_text'] ?? '');
-        if ($id && $reply) {
-            $pdo->prepare("
-                UPDATE inquiries
-                SET admin_reply = ?, status = 'Resolved', replied_at = NOW(), updated_at = NOW()
-                WHERE id = ?
-            ")->execute([$reply, $id]);
-            $success = "Reply saved and inquiry resolved.";
-        } else {
-            $error = "Reply text cannot be empty.";
+    try {
+        // Mark as Read
+        if ($action === 'mark_read') {
+            $id = (int)$_POST['inquiry_id'];
+            $pdo->prepare("UPDATE inquiries SET status = 'Read', updated_at = NOW() WHERE id = ?")
+                ->execute([$id]);
+            $success = "Inquiry marked as read.";
         }
-    }
 
-    // Delete inquiry
-    if ($action === 'delete_inquiry') {
-        $id = (int)$_POST['inquiry_id'];
-        $pdo->prepare("DELETE FROM inquiries WHERE id = ?")->execute([$id]);
-        $success = "Inquiry deleted.";
-    }
+        // Mark as Resolved
+        if ($action === 'mark_resolved') {
+            $id = (int)$_POST['inquiry_id'];
+            $pdo->prepare("UPDATE inquiries SET status = 'Resolved', updated_at = NOW() WHERE id = ?")
+                ->execute([$id]);
+            $success = "Inquiry marked as <strong>Resolved</strong>.";
+        }
 
-    // Bulk action
-    if ($action === 'bulk_action') {
-        $bulk_type = trim($_POST['bulk_type'] ?? '');
-        $ids       = array_map('intval', $_POST['selected_ids'] ?? []);
-        if (!empty($ids) && $bulk_type) {
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            if ($bulk_type === 'resolve') {
-                $pdo->prepare("UPDATE inquiries SET status='Resolved', updated_at=NOW() WHERE id IN ($placeholders)")
-                    ->execute($ids);
-                $success = count($ids) . " inquiries marked as Resolved.";
-            } elseif ($bulk_type === 'delete') {
-                $pdo->prepare("DELETE FROM inquiries WHERE id IN ($placeholders)")->execute($ids);
-                $success = count($ids) . " inquiries deleted.";
+        // Send Reply (store reply + mark resolved)
+        if ($action === 'send_reply') {
+            $id    = (int)$_POST['inquiry_id'];
+            $reply = trim($_POST['reply_text'] ?? '');
+            if ($id && $reply) {
+                $pdo->prepare("
+                    UPDATE inquiries
+                    SET admin_reply = ?, status = 'Resolved', replied_at = NOW(), updated_at = NOW()
+                    WHERE id = ?
+                ")->execute([$reply, $id]);
+                $success = "Reply saved and inquiry resolved.";
+            } else {
+                $error = "Reply text cannot be empty.";
             }
         }
+
+        // Delete inquiry
+        if ($action === 'delete_inquiry') {
+            $id = (int)$_POST['inquiry_id'];
+            $pdo->prepare("DELETE FROM inquiries WHERE id = ?")->execute([$id]);
+            $success = "Inquiry deleted.";
+        }
+
+        // Bulk action
+        if ($action === 'bulk_action') {
+            $bulk_type = trim($_POST['bulk_type'] ?? '');
+            $ids       = array_map('intval', $_POST['selected_ids'] ?? []);
+            if (!empty($ids) && $bulk_type) {
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                if ($bulk_type === 'resolve') {
+                    $pdo->prepare("UPDATE inquiries SET status='Resolved', updated_at=NOW() WHERE id IN ($placeholders)")
+                        ->execute($ids);
+                    $success = count($ids) . " inquiries marked as Resolved.";
+                } elseif ($bulk_type === 'delete') {
+                    $pdo->prepare("DELETE FROM inquiries WHERE id IN ($placeholders)")->execute($ids);
+                    $success = count($ids) . " inquiries deleted.";
+                }
+            }
+        }
+    } catch (PDOException $e) {
+        error_log("Inquiries admin POST error: " . $e->getMessage());
+        $error = "An error occurred while processing the request.";
     }
 }
 
@@ -261,6 +267,7 @@ $types = $pdo->query("SELECT DISTINCT inquiry_type FROM inquiries WHERE inquiry_
 
           <?php if ($viewing['status'] !== 'Resolved'): ?>
           <form method="POST">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="action" value="send_reply">
             <input type="hidden" name="inquiry_id" value="<?php echo $viewing['id']; ?>">
             <div class="mb-3">
@@ -355,6 +362,7 @@ $types = $pdo->query("SELECT DISTINCT inquiry_type FROM inquiries WHERE inquiry_
 
         <!-- Bulk Action Form -->
         <form method="POST" id="bulkForm">
+          <?php echo csrf_field(); ?>
           <input type="hidden" name="action" value="bulk_action">
           <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
             <select name="bulk_type" class="form-select form-select-sm rounded-pill" style="max-width:180px;">
@@ -432,6 +440,7 @@ $types = $pdo->query("SELECT DISTINCT inquiry_type FROM inquiries WHERE inquiry_
                             <!-- Mark Resolved -->
                             <?php if ($inq['status'] !== 'Resolved'): ?>
                             <form method="POST" class="d-inline">
+                              <?php echo csrf_field(); ?>
                               <input type="hidden" name="action" value="mark_resolved">
                               <input type="hidden" name="inquiry_id" value="<?php echo $inq['id']; ?>">
                               <button class="btn btn-sm btn-outline-success rounded-pill py-0 px-2" title="Mark Resolved">
@@ -441,6 +450,7 @@ $types = $pdo->query("SELECT DISTINCT inquiry_type FROM inquiries WHERE inquiry_
                             <?php endif; ?>
                             <!-- Delete -->
                             <form method="POST" class="d-inline" onsubmit="return confirm('Delete this inquiry?')">
+                              <?php echo csrf_field(); ?>
                               <input type="hidden" name="action" value="delete_inquiry">
                               <input type="hidden" name="inquiry_id" value="<?php echo $inq['id']; ?>">
                               <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2" title="Delete">

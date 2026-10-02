@@ -1,6 +1,15 @@
 <?php
 // Session management and authentication helpers
 if (session_status() === PHP_SESSION_NONE) {
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
@@ -46,7 +55,12 @@ function has_role($roles) {
  */
 function require_role($roles) {
     if (!is_logged_in()) {
-        $_SESSION['login_redirect'] = $_SERVER['REQUEST_URI'];
+        $redirect = $_SERVER['REQUEST_URI'] ?? '/index.php';
+        if (strpos($redirect, '/') === 0 && strpos($redirect, '//') !== 0) {
+            $_SESSION['login_redirect'] = $redirect;
+        } else {
+            $_SESSION['login_redirect'] = '/index.php';
+        }
         header("Location: /login.php");
         exit;
     }
@@ -88,6 +102,9 @@ function attempt_login($email, $password, $pdo) {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
+        // Prevent session fixation by regenerating session ID upon login
+        session_regenerate_id(true);
+
         // Fetch user profile details
         $profileStmt = $pdo->prepare("SELECT full_name, profile_pic FROM user_profiles WHERE user_id = ?");
         $profileStmt->execute([$user['id']]);

@@ -10,76 +10,88 @@ $success = $error = '';
 
 // ─── Handle POST Actions ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $action = $_POST['action'] ?? '';
 
-    // Add new course
-    if ($action === 'add_course') {
-        $title       = trim($_POST['title'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $instructor  = trim($_POST['instructor'] ?? '');
-        $category    = trim($_POST['category'] ?? '');
-        $duration    = trim($_POST['duration'] ?? '');
-        $price       = (float)($_POST['price'] ?? 0);
-        $level       = trim($_POST['level'] ?? 'Beginner');
-        $status      = trim($_POST['status'] ?? 'Active');
+    try {
+        // Add new course
+        if ($action === 'add_course') {
+            $title       = trim($_POST['title'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $instructor  = trim($_POST['instructor'] ?? '');
+            $category    = trim($_POST['category'] ?? '');
+            $duration    = trim($_POST['duration'] ?? '');
+            $price       = (float)($_POST['price'] ?? 0);
+            $level       = trim($_POST['level'] ?? 'Beginner');
+            $status      = trim($_POST['status'] ?? 'Active');
 
-        if ($title && $description && $instructor) {
-            $thumb = 'default_course.jpg';
-            if (!empty($_FILES['thumbnail']['name'])) {
-                $ext   = strtolower(pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION));
-                $allow = ['jpg','jpeg','png','webp'];
-                if (in_array($ext, $allow)) {
-                    $fname = 'course_' . time() . '.' . $ext;
-                    $dest  = __DIR__ . '/../uploads/courses/' . $fname;
-                    if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0775, true);
-                    if (move_uploaded_file($_FILES['thumbnail']['tmp_name'], $dest)) $thumb = $fname;
+            if ($title && $description && $instructor) {
+                $thumb = 'default_course.jpg';
+                if (!empty($_FILES['thumbnail']['name']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
+                    $thumbRes = validate_uploaded_file(
+                        $_FILES['thumbnail'],
+                        ['jpg','jpeg','png','webp'],
+                        ['image/jpeg', 'image/png', 'image/webp'],
+                        5 * 1024 * 1024,
+                        __DIR__ . '/../uploads/courses'
+                    );
+                    if ($thumbRes['success']) {
+                        $thumb = $thumbRes['filename'];
+                    } else {
+                        $error = $thumbRes['error'];
+                    }
                 }
+                if (empty($error)) {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO courses (title, description, instructor_name, category, duration, price, level, thumbnail, status, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,?,NOW())
+                    ");
+                    $stmt->execute([$title, $description, $instructor, $category, $duration, $price, $level, $thumb, $status]);
+                    $success = "Course <strong>" . sanitize($title) . "</strong> created successfully.";
+                }
+            } else {
+                $error = "Title, description and instructor are required.";
             }
-            $stmt = $pdo->prepare("
-                INSERT INTO courses (title, description, instructor_name, category, duration, price, level, thumbnail, status, created_at)
-                VALUES (?,?,?,?,?,?,?,?,?,NOW())
-            ");
-            $stmt->execute([$title, $description, $instructor, $category, $duration, $price, $level, $thumb, $status]);
-            $success = "Course <strong>" . sanitize($title) . "</strong> created successfully.";
-        } else {
-            $error = "Title, description and instructor are required.";
         }
-    }
 
-    // Toggle course status
-    if ($action === 'toggle_status') {
-        $id  = (int)$_POST['course_id'];
-        $cur = trim($_POST['current_status'] ?? '');
-        $new = ($cur === 'Active') ? 'Inactive' : 'Active';
-        $pdo->prepare("UPDATE courses SET status = ? WHERE id = ?")->execute([$new, $id]);
-        $success = "Course status updated to <strong>$new</strong>.";
-    }
-
-    // Delete course
-    if ($action === 'delete_course') {
-        $id = (int)$_POST['course_id'];
-        $pdo->prepare("DELETE FROM course_enrollments WHERE course_id = ?")->execute([$id]);
-        $pdo->prepare("DELETE FROM courses WHERE id = ?")->execute([$id]);
-        $success = "Course deleted successfully.";
-    }
-
-    // Add lesson to course
-    if ($action === 'add_lesson') {
-        $course_id   = (int)$_POST['course_id'];
-        $lesson_title = trim($_POST['lesson_title'] ?? '');
-        $content     = trim($_POST['content'] ?? '');
-        $video_url   = trim($_POST['video_url'] ?? '');
-        $sort_order  = (int)($_POST['sort_order'] ?? 0);
-
-        if ($course_id && $lesson_title) {
-            $pdo->prepare("
-                INSERT INTO course_lessons (course_id, title, content, video_url, sort_order, created_at)
-                VALUES (?,?,?,?,?,NOW())
-            ")->execute([$course_id, $lesson_title, $content, $video_url, $sort_order]);
-            $success = "Lesson added successfully.";
-        } else {
-            $error = "Course and lesson title are required.";
+        // Toggle course status
+        if ($action === 'toggle_status') {
+            $id  = (int)$_POST['course_id'];
+            $cur = trim($_POST['current_status'] ?? '');
+            $new = ($cur === 'Active') ? 'Inactive' : 'Active';
+            $pdo->prepare("UPDATE courses SET status = ? WHERE id = ?")->execute([$new, $id]);
+            $success = "Course status updated to <strong>$new</strong>.";
         }
+
+        // Delete course
+        if ($action === 'delete_course') {
+            $id = (int)$_POST['course_id'];
+            $pdo->prepare("DELETE FROM course_enrollments WHERE course_id = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM courses WHERE id = ?")->execute([$id]);
+            $success = "Course deleted successfully.";
+        }
+
+        // Add lesson to course
+        if ($action === 'add_lesson') {
+            $course_id   = (int)$_POST['course_id'];
+            $lesson_title = trim($_POST['lesson_title'] ?? '');
+            $content     = trim($_POST['content'] ?? '');
+            $video_url   = trim($_POST['video_url'] ?? '');
+            $sort_order  = (int)($_POST['sort_order'] ?? 0);
+
+            if ($course_id && $lesson_title) {
+                $pdo->prepare("
+                    INSERT INTO course_lessons (course_id, title, content, video_url, sort_order, created_at)
+                    VALUES (?,?,?,?,?,NOW())
+                ")->execute([$course_id, $lesson_title, $content, $video_url, $sort_order]);
+                $success = "Lesson added successfully.";
+            } else {
+                $error = "Course and lesson title are required.";
+            }
+        }
+    } catch (PDOException $e) {
+        error_log("Admin courses POST error: " . $e->getMessage());
+        $error = "An error occurred while processing the request.";
     }
 }
 
@@ -265,6 +277,7 @@ if ($selected_course_id) {
                           <i class="bi bi-journals"></i>
                         </a>
                         <form method="POST" class="d-inline">
+                          <?php echo csrf_field(); ?>
                           <input type="hidden" name="action" value="toggle_status">
                           <input type="hidden" name="course_id" value="<?php echo $c['id']; ?>">
                           <input type="hidden" name="current_status" value="<?php echo $c['status']; ?>">
@@ -273,6 +286,7 @@ if ($selected_course_id) {
                           </button>
                         </form>
                         <form method="POST" class="d-inline" onsubmit="return confirm('Delete this course and all its lessons?')">
+                          <?php echo csrf_field(); ?>
                           <input type="hidden" name="action" value="delete_course">
                           <input type="hidden" name="course_id" value="<?php echo $c['id']; ?>">
                           <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2" title="Delete">
@@ -299,6 +313,7 @@ if ($selected_course_id) {
 
           <!-- Add Lesson Form -->
           <form method="POST" class="row g-2 mb-4 bg-light p-3 rounded-3">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="action" value="add_lesson">
             <input type="hidden" name="course_id" value="<?php echo $sel_course['id']; ?>">
             <div class="col-md-5">
@@ -362,6 +377,7 @@ if ($selected_course_id) {
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" enctype="multipart/form-data">
+        <?php echo csrf_field(); ?>
         <input type="hidden" name="action" value="add_course">
         <div class="modal-body p-4">
           <div class="row g-3">

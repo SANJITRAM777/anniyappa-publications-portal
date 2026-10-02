@@ -10,58 +10,70 @@ $success = $error = '';
 
 // ─── Handle POST Actions ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'add_event') {
-        $title       = trim($_POST['title'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $speaker     = trim($_POST['speaker'] ?? '');
-        $event_date  = trim($_POST['event_date'] ?? '');
-        $event_time  = trim($_POST['event_time'] ?? '');
-        $venue       = trim($_POST['venue'] ?? '');
-        $type        = trim($_POST['type'] ?? 'Webinar');
-        $seats       = (int)($_POST['seats'] ?? 0);
-        $fee         = (float)($_POST['fee'] ?? 0);
-        $meet_link   = trim($_POST['meet_link'] ?? '');
-        $status      = trim($_POST['status'] ?? 'Upcoming');
+    try {
+        if ($action === 'add_event') {
+            $title       = trim($_POST['title'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $speaker     = trim($_POST['speaker'] ?? '');
+            $event_date  = trim($_POST['event_date'] ?? '');
+            $event_time  = trim($_POST['event_time'] ?? '');
+            $venue       = trim($_POST['venue'] ?? '');
+            $type        = trim($_POST['type'] ?? 'Webinar');
+            $seats       = (int)($_POST['seats'] ?? 0);
+            $fee         = (float)($_POST['fee'] ?? 0);
+            $meet_link   = trim($_POST['meet_link'] ?? '');
+            $status      = trim($_POST['status'] ?? 'Upcoming');
 
-        if ($title && $event_date) {
-            $banner = 'default_event.jpg';
-            if (!empty($_FILES['banner']['name'])) {
-                $ext   = strtolower(pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION));
-                $allow = ['jpg','jpeg','png','webp'];
-                if (in_array($ext, $allow)) {
-                    $fname = 'event_' . time() . '.' . $ext;
-                    $dest  = __DIR__ . '/../uploads/events/' . $fname;
-                    if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0775, true);
-                    if (move_uploaded_file($_FILES['banner']['tmp_name'], $dest)) $banner = $fname;
+            if ($title && $event_date) {
+                $banner = 'default_event.jpg';
+                if (!empty($_FILES['banner']['name']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
+                    $bannerRes = validate_uploaded_file(
+                        $_FILES['banner'],
+                        ['jpg','jpeg','png','webp'],
+                        ['image/jpeg', 'image/png', 'image/webp'],
+                        5 * 1024 * 1024,
+                        __DIR__ . '/../uploads/events'
+                    );
+                    if ($bannerRes['success']) {
+                        $banner = $bannerRes['filename'];
+                    } else {
+                        $error = $bannerRes['error'];
+                    }
                 }
+                if (empty($error)) {
+                    $pdo->prepare("
+                        INSERT INTO events (title, description, speaker, event_date, event_time, venue, type, seats_available, registration_fee, meet_link, banner, status, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,NOW())
+                    ")->execute([$title, $description, $speaker, $event_date, $event_time, $venue, $type, $seats, $fee, $meet_link, $banner, $status]);
+                    $success = "Event <strong>" . sanitize($title) . "</strong> created successfully.";
+                }
+            } else {
+                $error = "Title and event date are required.";
             }
-            $pdo->prepare("
-                INSERT INTO events (title, description, speaker, event_date, event_time, venue, type, seats_available, registration_fee, meet_link, banner, status, created_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,NOW())
-            ")->execute([$title, $description, $speaker, $event_date, $event_time, $venue, $type, $seats, $fee, $meet_link, $banner, $status]);
-            $success = "Event <strong>" . sanitize($title) . "</strong> created successfully.";
-        } else {
-            $error = "Title and event date are required.";
         }
-    }
 
-    if ($action === 'update_status') {
-        $id     = (int)$_POST['event_id'];
-        $status = trim($_POST['new_status'] ?? '');
-        $allowed = ['Upcoming','Ongoing','Completed','Cancelled'];
-        if (in_array($status, $allowed)) {
-            $pdo->prepare("UPDATE events SET status = ? WHERE id = ?")->execute([$status, $id]);
-            $success = "Event status updated to <strong>" . sanitize($status) . "</strong>.";
+        if ($action === 'update_status') {
+            $id     = (int)$_POST['event_id'];
+            $status = trim($_POST['new_status'] ?? '');
+            $allowed = ['Upcoming','Ongoing','Completed','Cancelled'];
+            if (in_array($status, $allowed)) {
+                $pdo->prepare("UPDATE events SET status = ? WHERE id = ?")->execute([$status, $id]);
+                $success = "Event status updated to <strong>" . sanitize($status) . "</strong>.";
+            }
         }
-    }
 
-    if ($action === 'delete_event') {
-        $id = (int)$_POST['event_id'];
-        $pdo->prepare("DELETE FROM event_registrations WHERE event_id = ?")->execute([$id]);
-        $pdo->prepare("DELETE FROM events WHERE id = ?")->execute([$id]);
-        $success = "Event deleted.";
+        if ($action === 'delete_event') {
+            $id = (int)$_POST['event_id'];
+            $pdo->prepare("DELETE FROM event_registrations WHERE event_id = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM events WHERE id = ?")->execute([$id]);
+            $success = "Event deleted.";
+        }
+    } catch (PDOException $e) {
+        error_log("Admin events POST error: " . $e->getMessage());
+        $error = "An error occurred while processing the request.";
     }
 }
 
@@ -237,6 +249,7 @@ $total_regs = $pdo->query("SELECT COUNT(*) FROM event_registrations")->fetchColu
                             <?php foreach (['Upcoming','Ongoing','Completed','Cancelled'] as $ns): ?>
                               <li>
                                 <form method="POST" class="px-2 py-1">
+                                  <?php echo csrf_field(); ?>
                                   <input type="hidden" name="action" value="update_status">
                                   <input type="hidden" name="event_id" value="<?php echo $ev['id']; ?>">
                                   <input type="hidden" name="new_status" value="<?php echo $ns; ?>">
@@ -255,6 +268,7 @@ $total_regs = $pdo->query("SELECT COUNT(*) FROM event_registrations")->fetchColu
                         </button>
                         <!-- Delete -->
                         <form method="POST" class="d-inline" onsubmit="return confirm('Delete this event?')">
+                          <?php echo csrf_field(); ?>
                           <input type="hidden" name="action" value="delete_event">
                           <input type="hidden" name="event_id" value="<?php echo $ev['id']; ?>">
                           <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2"><i class="bi bi-trash"></i></button>
@@ -329,6 +343,7 @@ $total_regs = $pdo->query("SELECT COUNT(*) FROM event_registrations")->fetchColu
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" enctype="multipart/form-data">
+        <?php echo csrf_field(); ?>
         <input type="hidden" name="action" value="add_event">
         <div class="modal-body p-4">
           <div class="row g-3">

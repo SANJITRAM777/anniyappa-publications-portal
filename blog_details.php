@@ -25,6 +25,7 @@ $page_title = sanitize($post['title']) . " - Anniyappa Publications Blog";
 $comment_success = '';
 $comment_error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
+    require_csrf_token();
     if (!is_logged_in()) {
         $_SESSION['login_redirect'] = "/blog_details.php?id=$post_id";
         header("Location: /login.php");
@@ -47,7 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
             $insComment->execute([$post_id, $author_name, $author_email, $comment_text]);
             $comment_success = "Your comment has been posted successfully!";
         } catch (PDOException $e) {
-            $comment_error = "Error adding comment: " . $e->getMessage();
+            error_log("Add blog comment error: " . $e->getMessage());
+            $comment_error = "Error adding comment. Please try again.";
         }
     }
 }
@@ -120,6 +122,7 @@ $comments = $commentsStmt->fetchAll();
 
         <!-- Form for comments -->
         <form action="/blog_details.php?id=<?php echo $post_id; ?>" method="POST" class="mb-4 bg-light p-4 border rounded-3">
+          <?php echo csrf_field(); ?>
           <h5 class="fw-bold text-dark h6 mb-3">Leave a Reply</h5>
           <div class="mb-3">
             <textarea name="comment_text" rows="3" class="form-control bg-white" placeholder="Add your constructive comments here..." required></textarea>

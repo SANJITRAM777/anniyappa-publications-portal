@@ -18,72 +18,84 @@ function make_slug(string $text): string {
 
 // ─── Handle POST Actions ───────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf_token();
     $action = $_POST['action'] ?? '';
 
-    // ── Create / Publish Article ──────────────────────────────────────
-    if ($action === 'add_post') {
-        $title    = trim($_POST['title']    ?? '');
-        $content  = trim($_POST['content']  ?? '');
-        $category = trim($_POST['category'] ?? '');
-        $tags     = trim($_POST['tags']     ?? '');
-        $status   = trim($_POST['status']   ?? 'Draft');
-        $author   = trim($_POST['author']   ?? $_SESSION['user_name'] ?? 'Admin');
-        $excerpt  = trim($_POST['excerpt']  ?? '');
+    try {
+        // ── Create / Publish Article ──────────────────────────────────────
+        if ($action === 'add_post') {
+            $title    = trim($_POST['title']    ?? '');
+            $content  = trim($_POST['content']  ?? '');
+            $category = trim($_POST['category'] ?? '');
+            $tags     = trim($_POST['tags']     ?? '');
+            $status   = trim($_POST['status']   ?? 'Draft');
+            $author   = trim($_POST['author']   ?? $_SESSION['user_name'] ?? 'Admin');
+            $excerpt  = trim($_POST['excerpt']  ?? '');
 
-        if ($title && $content) {
-            $slug  = make_slug($title) . '-' . time();
-            $thumb = 'default_blog.jpg';
+            if ($title && $content) {
+                $slug  = make_slug($title) . '-' . time();
+                $thumb = 'default_blog.jpg';
 
-            if (!empty($_FILES['featured_image']['name'])) {
-                $ext   = strtolower(pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION));
-                $allow = ['jpg','jpeg','png','webp','gif'];
-                if (in_array($ext, $allow)) {
-                    $fname = 'blog_' . time() . '.' . $ext;
-                    $dest  = __DIR__ . '/../uploads/blog/' . $fname;
-                    if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0775, true);
-                    if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $dest)) $thumb = $fname;
+                if (!empty($_FILES['featured_image']['name']) && $_FILES['featured_image']['error'] === UPLOAD_ERR_OK) {
+                    $imgRes = validate_uploaded_file(
+                        $_FILES['featured_image'],
+                        ['jpg','jpeg','png','webp','gif'],
+                        ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                        5 * 1024 * 1024,
+                        __DIR__ . '/../uploads/blog'
+                    );
+                    if ($imgRes['success']) {
+                        $thumb = $imgRes['filename'];
+                    } else {
+                        $error = $imgRes['error'];
+                    }
                 }
+
+                if (empty($error)) {
+                    $pdo->prepare("
+                        INSERT INTO blog_posts
+                            (title, slug, content, excerpt, category, tags, author, featured_image, status, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,?,NOW())
+                    ")->execute([$title, $slug, $content, $excerpt, $category, $tags, $author, $thumb, $status]);
+
+                    $success = "Post <strong>" . sanitize($title) . "</strong> saved as <strong>$status</strong>.";
+                }
+            } else {
+                $error = "Title and content are required.";
             }
-
-            $pdo->prepare("
-                INSERT INTO blog_posts
-                    (title, slug, content, excerpt, category, tags, author, featured_image, status, created_at)
-                VALUES (?,?,?,?,?,?,?,?,?,NOW())
-            ")->execute([$title, $slug, $content, $excerpt, $category, $tags, $author, $thumb, $status]);
-
-            $success = "Post <strong>" . sanitize($title) . "</strong> saved as <strong>$status</strong>.";
-        } else {
-            $error = "Title and content are required.";
         }
-    }
 
-    // ── Toggle Publish / Draft ────────────────────────────────────────
-    if ($action === 'toggle_status') {
-        $id  = (int)$_POST['post_id'];
-        $cur = trim($_POST['current_status'] ?? '');
-        $new = ($cur === 'Published') ? 'Draft' : 'Published';
-        $pdo->prepare("UPDATE blog_posts SET status = ? WHERE id = ?")->execute([$new, $id]);
-        $success = "Post status changed to <strong>$new</strong>.";
-    }
+        // ── Toggle Publish / Draft ────────────────────────────────────────
+        if ($action === 'toggle_status') {
+            $id  = (int)$_POST['post_id'];
+            $cur = trim($_POST['current_status'] ?? '');
+            $new = ($cur === 'Published') ? 'Draft' : 'Published';
+            $pdo->prepare("UPDATE blog_posts SET status = ? WHERE id = ?")->execute([$new, $id]);
+            $success = "Post status changed to <strong>$new</strong>.";
+        }
 
-    // ── Delete Post ──────────────────────────────────────────────────
-    if ($action === 'delete_post') {
-        $id = (int)$_POST['post_id'];
-        $pdo->prepare("DELETE FROM blog_comments WHERE post_id = ?")->execute([$id]);
-        $pdo->prepare("DELETE FROM blog_posts WHERE id = ?")->execute([$id]);
-        $success = "Post deleted successfully.";
-    }
+        // ── Delete Post ──────────────────────────────────────────────────
+        if ($action === 'delete_post') {
+            $id = (int)$_POST['post_id'];
+            $pdo->prepare("DELETE FROM blog_comments WHERE post_id = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM blog_posts WHERE id = ?")->execute([$id]);
+            $success = "Post deleted successfully.";
+        }
 
-    // ── Approve / Delete Comment ──────────────────────────────────────
-    if ($action === 'approve_comment') {
-        $id = (int)$_POST['comment_id'];
-        $pdo->prepare("UPDATE blog_comments SET status = 'Approved' WHERE id = ?")->execute([$id]);
-        $success = "Comment approved.";
-    }
-    if ($action === 'delete_comment') {
-        $id = (int)$_POST['comment_id'];
-        $pdo->prepare("DELETE FROM blog_comments WHERE id = ?")->execute([$id]);
-        $success = "Comment removed.";
+        // ── Approve / Delete Comment ──────────────────────────────────────
+        if ($action === 'approve_comment') {
+            $id = (int)$_POST['comment_id'];
+            $pdo->prepare("UPDATE blog_comments SET status = 'Approved' WHERE id = ?")->execute([$id]);
+            $success = "Comment approved.";
+        }
+        if ($action === 'delete_comment') {
+            $id = (int)$_POST['comment_id'];
+            $pdo->prepare("DELETE FROM blog_comments WHERE id = ?")->execute([$id]);
+            $success = "Comment removed.";
+        }
+    } catch (PDOException $e) {
+        error_log("Admin blog POST error: " . $e->getMessage());
+        $error = "An error occurred while processing the request.";
     }
 }
 
@@ -263,6 +275,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM blog_posts WHERE catego
                       <td>
                         <div class="d-flex gap-1">
                           <form method="POST" class="d-inline">
+                            <?php echo csrf_field(); ?>
                             <input type="hidden" name="action" value="approve_comment">
                             <input type="hidden" name="comment_id" value="<?php echo $cm['id']; ?>">
                             <button class="btn btn-sm btn-success rounded-pill py-0 px-2" title="Approve">
@@ -270,6 +283,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM blog_posts WHERE catego
                             </button>
                           </form>
                           <form method="POST" class="d-inline" onsubmit="return confirm('Delete this comment?')">
+                            <?php echo csrf_field(); ?>
                             <input type="hidden" name="action" value="delete_comment">
                             <input type="hidden" name="comment_id" value="<?php echo $cm['id']; ?>">
                             <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2" title="Delete">
@@ -355,6 +369,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM blog_posts WHERE catego
                           </a>
                           <!-- Toggle Publish -->
                           <form method="POST" class="d-inline">
+                            <?php echo csrf_field(); ?>
                             <input type="hidden" name="action" value="toggle_status">
                             <input type="hidden" name="post_id" value="<?php echo $p['id']; ?>">
                             <input type="hidden" name="current_status" value="<?php echo $p['status']; ?>">
@@ -365,6 +380,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM blog_posts WHERE catego
                           </form>
                           <!-- Delete -->
                           <form method="POST" class="d-inline" onsubmit="return confirm('Delete this post permanently?')">
+                            <?php echo csrf_field(); ?>
                             <input type="hidden" name="action" value="delete_post">
                             <input type="hidden" name="post_id" value="<?php echo $p['id']; ?>">
                             <button class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2" title="Delete">
@@ -395,6 +411,7 @@ $categories = $pdo->query("SELECT DISTINCT category FROM blog_posts WHERE catego
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" enctype="multipart/form-data">
+        <?php echo csrf_field(); ?>
         <input type="hidden" name="action" value="add_post">
         <div class="modal-body p-4">
           <div class="row g-3">

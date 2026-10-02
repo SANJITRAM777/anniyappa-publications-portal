@@ -18,7 +18,7 @@ if (is_logged_in() && isset($pdo)) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?php echo $page_title ?? 'Anniyappa Publications | Academic Publishing & Educational Services'; ?></title>
+  <title><?php echo isset($page_title) ? sanitize($page_title) : 'Anniyappa Publications | Academic Publishing & Educational Services'; ?></title>
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -105,7 +105,7 @@ if (is_logged_in() && isset($pdo)) {
                 <?php endif; ?>
                 
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                <li><a class="dropdown-item text-danger" href="/logout.php?csrf_token=<?php echo generate_csrf_token(); ?>"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
               </ul>
             </li>
           <?php else: ?>

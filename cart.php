@@ -16,12 +16,13 @@ $msg = '';
 
 // Handle cart actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
+    require_csrf_token();
+    $action  = $_POST['action'] ?? '';
     $book_id = (int)($_POST['book_id'] ?? 0);
-    $qty = (int)($_POST['qty'] ?? 1);
+    $qty     = (int)($_POST['qty'] ?? 1);
 
     if ($action === 'add' && $book_id > 0) {
-        // Add item
+        $qty = max(1, $qty);
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO cart (user_id, book_id, quantity) 
@@ -31,24 +32,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$user_id, $book_id, $qty, $qty]);
             $msg = "Book added to cart!";
         } catch (PDOException $e) {
-            $msg = "Error adding to cart: " . $e->getMessage();
+            error_log("Cart add error: " . $e->getMessage());
+            $msg = "Error adding to cart. Please try again.";
         }
     } elseif ($action === 'update' && $book_id > 0) {
-        // Update item quantity
-        if ($qty <= 0) {
-            // Delete if zero or negative
+        try {
+            if ($qty <= 0) {
+                // Delete if zero or negative
+                $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ? AND book_id = ?");
+                $stmt->execute([$user_id, $book_id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND book_id = ?");
+                $stmt->execute([$qty, $user_id, $book_id]);
+            }
+            $msg = "Cart updated!";
+        } catch (PDOException $e) {
+            error_log("Cart update error: " . $e->getMessage());
+            $msg = "Error updating cart.";
+        }
+    } elseif ($action === 'delete' && $book_id > 0) {
+        try {
             $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ? AND book_id = ?");
             $stmt->execute([$user_id, $book_id]);
-        } else {
-            $stmt = $pdo->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND book_id = ?");
-            $stmt->execute([$qty, $user_id, $book_id]);
+            $msg = "Item removed from cart.";
+        } catch (PDOException $e) {
+            error_log("Cart delete error: " . $e->getMessage());
+            $msg = "Error removing item from cart.";
         }
-        $msg = "Cart updated!";
-    } elseif ($action === 'delete' && $book_id > 0) {
-        // Remove item
-        $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ? AND book_id = ?");
-        $stmt->execute([$user_id, $book_id]);
-        $msg = "Item removed from cart.";
     }
 }
 
@@ -121,6 +131,7 @@ foreach ($cart_items as $item) {
                     </td>
                     <td class="text-center" style="width: 140px;">
                       <form action="/cart.php" method="POST" class="d-inline-block">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="book_id" value="<?php echo $item['book_id']; ?>">
                         <div class="input-group input-group-sm rounded-pill overflow-hidden border">
@@ -132,6 +143,7 @@ foreach ($cart_items as $item) {
                     <td class="text-end text-primary fw-bold">&#8377;<?php echo number_format($item_total, 2); ?></td>
                     <td class="text-center">
                       <form action="/cart.php" method="POST" class="d-inline-block">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="book_id" value="<?php echo $item['book_id']; ?>">
                         <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-1 border-0" aria-label="Delete">

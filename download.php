@@ -101,10 +101,28 @@ if (!$file_path) {
     die("Requested file record not found or access unauthorized.");
 }
 
-// Absolute path resolution and path traversal security check
+// Absolute path resolution and path traversal security check restricted strictly to uploads/
+$uploads_dir = __DIR__ . '/uploads';
+if (!is_dir($uploads_dir)) {
+    mkdir($uploads_dir, 0775, true);
+}
+$real_base = realpath($uploads_dir);
 $full_path = __DIR__ . '/' . ltrim($file_path, '/');
-$real_base = realpath(__DIR__);
 $real_file = realpath($full_path);
+
+// Enforce boundary check (prevent directory traversal out of uploads directory)
+if ($real_file) {
+    if (strpos($real_file, $real_base) !== 0) {
+        http_response_code(403);
+        die("Access denied: Invalid file path trajectory.");
+    }
+} else {
+    $normalized = str_replace('\\', '/', $file_path);
+    if (strpos($normalized, '..') !== false || strpos(ltrim($normalized, '/'), 'uploads/') !== 0) {
+        http_response_code(403);
+        die("Access denied: Invalid file path trajectory.");
+    }
+}
 
 // If physical file doesn't exist on disk, fallback to generating sample PDF or reporting error
 if (!$real_file || !file_exists($real_file)) {
@@ -116,14 +134,8 @@ if (!$real_file || !file_exists($real_file)) {
         echo "%PDF-1.4\n1 0 obj\n<< /Title (Anniyappa Publications Document) >>\nendobj\nxref\n0 1\n0000000000 65535 f\ntrailer\n<< /Size 2 >>\nstartxref\n10\n%%EOF\n";
         exit;
     }
-    http_response_code(444);
-    die("File asset is missing from storage disk: " . sanitize($file_path));
-}
-
-// Enforce boundary check (prevent directory traversal out of project root)
-if (strpos($real_file, $real_base) !== 0) {
-    http_response_code(403);
-    die("Access denied: Invalid file path trajectory.");
+    http_response_code(404);
+    die("File asset is missing from storage disk.");
 }
 
 // Send file headers

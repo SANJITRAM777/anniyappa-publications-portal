@@ -12,24 +12,25 @@ $error = '';
 
 // Handle grading submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['grade_assignment'])) {
+    require_csrf_token();
+
     $assignment_id = (int)($_POST['assignment_id'] ?? 0);
     $grade = trim($_POST['grade'] ?? '');
+    $allowed_grades = ['A', 'B', 'C', 'F'];
     
-    if ($assignment_id <= 0 || empty($grade)) {
-        $error = "Assignment ID and grade value are required.";
+    if ($assignment_id <= 0 || !in_array($grade, $allowed_grades, true)) {
+        $error = "Valid assignment ID and approved grade value (A, B, C, F) are required.";
     } else {
         try {
             $stmt = $pdo->prepare("UPDATE assignments SET grade = ?, status = 'Graded' WHERE id = ?");
             $stmt->execute([$grade, $assignment_id]);
             
             // Check if student completed all assignments to auto-issue Internship Certificate
-            // For simplicity, if they get an Approved grade (A, B, C) on at least one assignment, we can issue certificate.
-            // Let's check student ID and internship ID first
             $infoStmt = $pdo->prepare("SELECT student_id, internship_id FROM assignments WHERE id = ?");
             $infoStmt->execute([$assignment_id]);
             $info = $infoStmt->fetch();
             
-            if ($info && in_array($grade, ['A', 'B', 'C'])) {
+            if ($info && in_array($grade, ['A', 'B', 'C'], true)) {
                 $student_id = $info['student_id'];
                 $internship_id = $info['internship_id'];
                 
@@ -44,9 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['grade_assignment'])) 
                 }
             }
             
-            $success = "Assignment graded successfully! Certificate will be auto-issued if passed.";
+            $success = "Assignment graded successfully! Certificate auto-issued if passed.";
         } catch (PDOException $e) {
-            $error = "Grading update failed: " . $e->getMessage();
+            error_log("Grade assignment error: " . $e->getMessage());
+            $error = "Grading update failed due to a database error.";
         }
     }
 }
@@ -144,6 +146,7 @@ $submissions = $submissionsStmt->fetchAll();
                     </td>
                     <td>
                       <form action="/faculty/grade_assignments.php" method="POST" class="d-flex align-items-center gap-1">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="assignment_id" value="<?php echo $sub['id']; ?>">
                         <select name="grade" class="form-select form-select-sm bg-light py-1" style="width: 75px; border-radius: 5px;" required>
                           <option value="">--</option>

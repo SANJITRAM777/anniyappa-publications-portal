@@ -11,6 +11,7 @@ $error = '';
 
 // Handle role update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
+    require_csrf_token();
     $user_id = (int)($_POST['user_id'] ?? 0);
     $role_id = (int)($_POST['role_id'] ?? 0);
     
@@ -24,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
                 $stmt->execute([$role_id, $user_id]);
                 $success = "User access role updated successfully!";
             } catch (PDOException $e) {
-                $error = "Failed to update role: " . $e->getMessage();
+                error_log("Update user role error: " . $e->getMessage());
+                $error = "Failed to update role. Please try again.";
             }
         }
     }
@@ -113,6 +115,7 @@ $roles = $pdo->query("SELECT * FROM roles ORDER BY id ASC")->fetchAll();
                   </td>
                   <td>
                     <form action="/admin/users.php" method="POST" class="d-flex align-items-center gap-1">
+                      <?php echo csrf_field(); ?>
                       <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                       <select name="role_id" class="form-select form-select-sm bg-light" style="width: 120px; font-size:0.75rem; border-radius:5px;" required>
                         <?php foreach ($roles as $r): ?>

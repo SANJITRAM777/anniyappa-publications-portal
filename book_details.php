@@ -51,6 +51,7 @@ if (isset($_GET['download']) && $book['price'] == 0) {
 $review_success = '';
 $review_error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
+    require_csrf_token();
     if (!is_logged_in()) {
         $_SESSION['login_redirect'] = "/book_details.php?id=$book_id";
         header("Location: /login.php");
@@ -68,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             $insReview->execute([$book_id, get_logged_in_user_id(), $rating, $review_text]);
             $review_success = "Thank you! Your review has been published.";
         } catch (PDOException $e) {
-            $review_error = "You have already reviewed this book.";
+            error_log("Submit review error: " . $e->getMessage());
+            $review_error = "You have already reviewed this book or an error occurred.";
         }
     }
 }
@@ -138,6 +140,7 @@ $recommendations = $recStmt->fetchAll();
           <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Logged in users can download PDF reference modules directly.</p>
         <?php else: ?>
           <form action="/cart.php" method="POST">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="book_id" value="<?php echo $book_id; ?>">
             
@@ -240,6 +243,7 @@ $recommendations = $recStmt->fetchAll();
 
           <!-- Review Form -->
           <form action="/book_details.php?id=<?php echo $book_id; ?>" method="POST" class="mb-5 p-4 border rounded-3 bg-light">
+            <?php echo csrf_field(); ?>
             <h5 class="fw-bold text-dark h6 mb-3">Write a Review</h5>
             <div class="row g-3">
               <div class="col-md-4">

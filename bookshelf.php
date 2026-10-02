@@ -140,6 +140,7 @@ $books = $booksStmt->fetchAll();
                         <a href="/book_details.php?id=<?php echo $book['id']; ?>&download=1" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="bi bi-download me-1"></i>Download</a>
                       <?php else: ?>
                         <form action="/cart.php" method="POST">
+                          <?php echo csrf_field(); ?>
                           <input type="hidden" name="action" value="add">
                           <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
                           <input type="hidden" name="qty" value="1">

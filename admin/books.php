@@ -11,6 +11,8 @@ $error = '';
 
 // Handle add book
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book'])) {
+    require_csrf_token();
+
     $title = trim($_POST['title'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
     $price = (float)($_POST['price'] ?? 0.00);
@@ -27,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book'])) {
                 VALUES (?, ?, ?, ?, ?, ?, 'default_book.png')
             ");
             $stmt->execute([$title, $category_id, $price, $stock, $description, $is_featured]);
+            $book_id = $pdo->lastInsertId();
             
             // Map to existing author or default author
             $authorCheck = $pdo->query("SELECT id FROM authors ORDER BY id ASC LIMIT 1")->fetchColumn();
@@ -39,20 +42,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book'])) {
             
             $success = "Book added to digital catalog successfully!";
         } catch (PDOException $e) {
-            $error = "Failed to add book: " . $e->getMessage();
+            error_log("Add book error: " . $e->getMessage());
+            $error = "Failed to add book due to a database error.";
         }
     }
 }
 
-// Handle delete book
-if (isset($_GET['delete_id'])) {
-    $del_id = (int)$_GET['delete_id'];
-    try {
-        $stmt = $pdo->prepare("DELETE FROM books WHERE id = ?");
-        $stmt->execute([$del_id]);
-        $success = "Book removed from catalog successfully.";
-    } catch (PDOException $e) {
-        $error = "Failed to remove book (it may be referenced in orders): " . $e->getMessage();
+// Handle delete book (Converted from GET to POST for CSRF protection)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
+    require_csrf_token();
+
+    $del_id = (int)($_POST['book_id'] ?? 0);
+    if ($del_id > 0) {
+        try {
+            $stmt = $pdo->prepare("DELETE FROM books WHERE id = ?");
+            $stmt->execute([$del_id]);
+            $success = "Book removed from catalog successfully.";
+        } catch (PDOException $e) {
+            error_log("Delete book error: " . $e->getMessage());
+            $error = "Failed to remove book (it may be referenced in existing orders).";
+        }
     }
 }
 
@@ -116,6 +125,7 @@ $categories = $pdo->query("SELECT * FROM categories WHERE type = 'Book' ORDER BY
           <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius:15px;">
             <h3 class="fw-bold text-dark h5 mb-3 border-bottom pb-2">Add New Book</h3>
             <form action="/admin/books.php" method="POST">
+              <?php echo csrf_field(); ?>
               <div class="mb-2">
                 <label for="bookTitle" class="form-label small text-muted">Book Title <span class="text-danger">*</span></label>
                 <input type="text" name="title" id="bookTitle" class="form-control bg-light" required placeholder="E.g., Quantum Computing Fundamentals">
@@ -177,9 +187,13 @@ $categories = $pdo->query("SELECT * FROM categories WHERE type = 'Book' ORDER BY
                       <td class="text-end text-dark font-monospace">&#8377;<?php echo number_format($b['price'], 2); ?></td>
                       <td class="text-center text-dark"><?php echo $b['stock']; ?></td>
                       <td class="text-center">
-                        <a href="/admin/books.php?delete_id=<?php echo $b['id']; ?>" class="btn btn-outline-danger btn-sm border-0 rounded-circle" onclick="return confirm('Are you sure you want to delete this book?');">
-                          <i class="bi bi-trash"></i>
-                        </a>
+                        <form action="/admin/books.php" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                          <?php echo csrf_field(); ?>
+                          <input type="hidden" name="book_id" value="<?php echo $b['id']; ?>">
+                          <button type="submit" name="delete_book" class="btn btn-outline-danger btn-sm border-0 rounded-circle" title="Delete Book">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
                       </td>
                     </tr>
                   <?php endforeach; ?>
